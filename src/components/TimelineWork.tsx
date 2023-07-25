@@ -27,15 +27,16 @@ const TimelineWorkComponent = (props: Props) => {
                         <div className="flex items-center">
                             <div className="z-10 flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
                                 <img
+                                    alt='true_logo'
                                     src='https://upload.wikimedia.org/wikipedia/commons/1/1c/True_Corporation_%28Thailand%29.svg' />
 
                             </div>
                             <div className="hidden sm:flex w-full bg-gray-200 h-0.5 dark:bg-gray-700" />
                         </div>
                         <div className="mt-3 sm:pr-8">
-                            <h3 className="text-lg font-semibold dark:text-white">
+                            <p className="text-lg font-semibold dark:text-white">
                                 True Crop.
-                            </h3>
+                            </p>
                             <div className="block mb-2 text-sm  leading-none text-gray-400 dark:text-gray-500">
                                 Backend developer (Internship)
                             </div>
@@ -51,14 +52,16 @@ const TimelineWorkComponent = (props: Props) => {
                         <div className="flex items-center">
                             <div className="z-10 flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0">
                                 <img
-                                    src='https://giftcard.scb.co.th/assets/images/scb-logo.png' />
+                                    src='https://giftcard.scb.co.th/assets/images/scb-logo.png'
+                                    alt='scb_logo'
+                                />
                             </div>
                             <div className="hidden sm:flex w-full bg-gray-200 h-0.5 dark:bg-gray-700" />
                         </div>
                         <div className="mt-3 sm:pr-8">
-                            <h3 className="text-lg font-semibold dark:text-white">
+                            <p className="text-lg font-semibold dark:text-white">
                                 SCB
-                            </h3>
+                            </p>
                             <div className="block mb-2 text-sm font-medium leading-none text-gray-400 dark:text-gray-500">
                                 Software Engineer Associate
                             </div>

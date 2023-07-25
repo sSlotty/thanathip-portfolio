@@ -11,7 +11,6 @@ type Props = {}
 
 const Index = (props: Props) => {
 
-    console.log(props)
 
     return (
         <div className='bg-slate-900'>

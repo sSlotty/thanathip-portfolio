@@ -8,9 +8,6 @@ type Props = {}
 
 const CertificateComponent = (props: Props) => {
 
-  console.log("Certificate Component")
-
-
 
   useEffect(() => {
     const items: CarouselItem[] = [
@@ -168,6 +165,7 @@ const CertificateComponent = (props: Props) => {
           </div>
           {/* Slider controls */}
           <button
+            name='prev'
             id="data-carousel-prev"
             type="button"
             className="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
@@ -192,6 +190,7 @@ const CertificateComponent = (props: Props) => {
             </span>
           </button>
           <button
+            name='next'
             id="data-carousel-next"
             type="button"
             className="absolute top-0 right-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
