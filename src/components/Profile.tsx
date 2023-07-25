@@ -13,6 +13,7 @@ const ProfileComponent = (props: Props) => {
     }
 
 
+
     return (
         <>
             <div className="mx-auto max-w-screen-lg px-3 py-6 text-white">
@@ -74,8 +75,10 @@ const ProfileComponent = (props: Props) => {
                     </div>
                     <div className="shrink-0">
                         <img
-                            className=" rounded-full object-cover h-80 w-84"
-                            src="https://scontent.fbkk22-6.fna.fbcdn.net/v/t39.30808-6/341331137_558053799859745_6456396565562366243_n.jpg?_nc_cat=104&cb=99be929b-3346023f&ccb=1-7&_nc_sid=174925&_nc_eui2=AeHftIN83Sk02l7SGDgcR-jt9nv0MwPuxzP2e_QzA-7HM_hKHWnyGPUBuZFlA_q5-Ieb_MIfysx1qODXJJigT4m3&_nc_ohc=Omgjx7Iibs8AX_Z6Z88&_nc_oc=AQkv35FO0OZ1AEijP7Bvq9ed9yaqmJdGlR6cgK5mXIEj7WhjK5IXGqX2P9H9WKaEu04&_nc_ht=scontent.fbkk22-6.fna&oh=00_AfDnVJFdwAOf8FbHULwcJbkqIoED5woEQVhDfbo7IyqfTA&oe=64C39CE4"
+                            width="80px"
+                            height="80px"
+                            className=" rounded-full object-cover h-80 w-80"
+                            src="profile.webp"
                             alt="Avatar image"
                             loading="lazy"
                         />
