@@ -24,14 +24,9 @@ const Index = (props: Props) => {
                     <nav>
                         <ul className="flex gap-x-3 font-medium text-gray-200">
                             <li className="hover:text-white">
-                                <a href="/demo/astro-boilerplate/posts">Blogs</a>
+                                <Link to={{ pathname:"https://github.com/sSlotty"}} target='_blank'>GitHub</Link>
                             </li>
-                            <li className="hover:text-white">
-                                <a href="/demo/astro-boilerplate">GitHub</a>
-                            </li>
-                            <li className="hover:text-white">
-                                <a href="/demo/astro-boilerplate">Twitter</a>
-                            </li>
+            
                         </ul>
                     </nav>
                 </div>
@@ -81,7 +76,7 @@ const Index = (props: Props) => {
 
             <TimelineWorkComponent />
 
-            {/* <CertificateComponent /> */}
+            <CertificateComponent />
 
             <ul>
                 <li>

@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React from 'react'
+import { Link } from 'react-router-dom';
 
 type Props = {}
 
@@ -19,10 +20,11 @@ const ProfileComponent = (props: Props) => {
                     <div>
                         <h1 className="text-2xl md:text-5xl font-bold text-white animate-typing overflow-hidden whitespace-nowrap border-r-4 border-r-white pr-5">
                             Hi there, I'm{" "}
-                            <span className="bg-gradient-to-br from-sky-500 to-cyan-400 bg-clip-text text-transparent">
+                            <span
+                                className="bg-gradient-to-br from-sky-500 to-cyan-400 bg-clip-text text-transparent">
                                 Thanathip
                             </span>{" "}
-                            👋
+                            👋 🎉
                         </h1>
 
                         <p className="mt-6 text-xl leading-9">
@@ -30,41 +32,44 @@ const ProfileComponent = (props: Props) => {
 
                         </p>
                         <p className="text-xl leading-9">
-                            I'm granduated Bechelor degree from <a className="bg-gradient-to-br from-sky-500 to-cyan-400 bg-clip-text text-transparent" href="https://www.swu.ac.th/" target='blank'>Srinakharinwirot University</a> in Computer Science.
+                            I'm granduated Bechelor degree from <Link
+                                className="bg-gradient-to-br from-sky-500 to-cyan-400 bg-clip-text text-transparent"
+                                to={{ pathname: "https://www.swu.ac.th/" }}
+                                target='blank'>Srinakharinwirot University</Link> in Computer Science.
                         </p>
                         <div className="mt-3 flex gap-1">
-                            <a href="/demo/astro-boilerplate">
+                            <Link to={{pathname:"#"}} target='blank'>
                                 <img
                                     className="h-12 w-12 hover:translate-y-1"
                                     src="https://creativedesignsguru.com/demo/astro-boilerplate/assets/images/twitter-icon.png"
                                     alt="Twitter icon"
                                     loading="lazy"
                                 />
-                            </a>
-                            <a href="/demo/astro-boilerplate">
+                            </Link>
+                            <Link to={{ pathname: "#" }} target='blank'>
                                 <img
                                     className="h-12 w-12 hover:translate-y-1"
                                     src="https://creativedesignsguru.com/demo/astro-boilerplate/assets/images/facebook-icon.png"
                                     alt="Facebook icon"
                                     loading="lazy"
                                 />
-                            </a>
-                            <a href="/demo/astro-boilerplate">
+                            </Link>
+                            <Link to={{ pathname: "https://www.linkedin.com/in/thanathip-chanasri-008b3a226/" }} target='blank' >
                                 <img
                                     className="h-12 w-12 hover:translate-y-1"
                                     src="https://creativedesignsguru.com/demo/astro-boilerplate/assets/images/linkedin-icon.png"
                                     alt="Linkedin icon"
                                     loading="lazy"
                                 />
-                            </a>
-                            <a href="/demo/astro-boilerplate">
+                            </Link>
+                            <Link to={{ pathname: "https://www.youtube.com/channel/UCgeunsrWLOcqj5kfPuyUeOQ" }} target='blank' >
                                 <img
                                     className="h-12 w-12 hover:translate-y-1"
                                     src="https://creativedesignsguru.com/demo/astro-boilerplate/assets/images/youtube-icon.png"
                                     alt="Youtube icon"
                                     loading="lazy"
                                 />
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     <div className="shrink-0">
