@@ -9,11 +9,11 @@ const SkillComponent = (props: Props) => {
                 Technical Skill
             </div>
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row">
+                <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row overflow-x-auto overflow-y-auto">
                     <h1 className='text-2xl font-bold text-white'>
                         Proficient
                     </h1>
-                    <div className="flex flex-col items-center gap-y-2 md:flex-row">
+                    <div className="flex flex-col text-center items-center gap-y-2 md:flex-row">
                         <div className="ml-3 flex gap-2">
                             <div className="rounded-md px-2 py-1 text-xs font-semibold bg-fuchsia-400 text-fuchsia-900">
                                 Astro.js
@@ -31,12 +31,12 @@ const SkillComponent = (props: Props) => {
                     </div>
 
                 </div>
-                <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row">
+                <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row overflow-x-auto overflow-y-auto">
                     <h1 className='text-2xl font-bold text-white'>
                         Intermediate
                     </h1>
-                    <div className="flex flex-col items-center gap-y-2 md:flex-row">
-                        <div className="ml-3 flex gap-2">
+                    <div className="flex flex-col text-center items-center gap-y-2 md:flex-row">
+                        <div className="ml-3 flex gap-2 ">
                             <div className="rounded-md px-2 py-1 text-xs font-semibold bg-fuchsia-400 text-fuchsia-900">
                                 Astro.js
                             </div>
@@ -53,7 +53,7 @@ const SkillComponent = (props: Props) => {
                     </div>
 
                 </div>
-                <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row">
+                <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row overflow-x-auto overflow-y-auto">
                     <div className='shrink-0'>
                         <h1 className='text-2xl font-bold text-white'>
                             Beginner
@@ -61,7 +61,7 @@ const SkillComponent = (props: Props) => {
                     </div>
 
                     <div>
-                        <div className="flex flex-col items-center gap-y-2 md:flex-row">
+                        <div className="flex flex-col text-center items-center gap-y-2 md:flex-row">
                             <div className="ml-3 flex gap-2">
                                 <div className="rounded-md px-2 py-1 text-xs font-semibold bg-fuchsia-400 text-fuchsia-900">
                                     Astro.js
