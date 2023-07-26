@@ -35,7 +35,7 @@ const Index = (props: Props) => {
             </div>
 
 
-            <div className='h-[80vh] sm:h-[70vh] md:h-[80vh] lg:h-[80vh]'>
+            <div className='h-[100vh] sm:h-[90vh] md:h-[80vh] lg:h-[80vh]'>
                 <div className='max-h-full'>
                     <ProfileComponent />
                 </div>

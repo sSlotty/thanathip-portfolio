@@ -10,70 +10,77 @@ const SkillComponent = (props: Props) => {
             </div>
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row overflow-x-auto overflow-y-auto">
-                    <h1 className='text-2xl font-bold text-white'>
+                    <h1 className='text-2xl font-bold text-white w-32'>
                         Proficient
                     </h1>
                     <div className="flex flex-col text-center items-center gap-y-2 md:flex-row">
                         <div className="ml-3 flex gap-2">
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-fuchsia-400 text-fuchsia-900">
-                                Astro.js
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                Python
                             </div>
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-lime-400 text-lime-900">
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                Java
+                            </div>
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
                                 Web design
                             </div>
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-400 text-sky-900">
-                                Tailwind.css
-                            </div>
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-rose-400 text-rose-900">
-                                TypeScript
-                            </div>
+                            
                         </div>
                     </div>
 
                 </div>
                 <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row overflow-x-auto overflow-y-auto">
-                    <h1 className='text-2xl font-bold text-white'>
+                    <h1 className='text-2xl font-bold text-white w-32'>
                         Intermediate
                     </h1>
                     <div className="flex flex-col text-center items-center gap-y-2 md:flex-row">
                         <div className="ml-3 flex gap-2 ">
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-fuchsia-400 text-fuchsia-900">
-                                Astro.js
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                Java Script
                             </div>
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-lime-400 text-lime-900">
-                                Web design
-                            </div>
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-400 text-sky-900">
-                                Tailwind.css
-                            </div>
-                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-rose-400 text-rose-900">
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
                                 TypeScript
+                            </div>
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                HTML
+                            </div>
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                NodeJS
+                            </div>
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                C#
+                            </div>
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                API
+                            </div>
+                            <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                SQL
                             </div>
                         </div>
                     </div>
 
                 </div>
                 <div className="flex flex-col items-center gap-x-8 rounded-md bg-slate-800 p-3 md:flex-row overflow-x-auto overflow-y-auto">
-                    <div className='shrink-0'>
+                    <div className='shrink-0 w-32'>
                         <h1 className='text-2xl font-bold text-white'>
                             Beginner
                         </h1>
                     </div>
 
                     <div>
-                        <div className="flex flex-col text-center items-center gap-y-2 md:flex-row">
+                        <div className="flex flex-col text-center  items-center gap-y-2 md:flex-row">
                             <div className="ml-3 flex gap-2">
-                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-fuchsia-400 text-fuchsia-900">
-                                    Astro.js
+                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                    Android
                                 </div>
-                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-lime-400 text-lime-900">
-                                    Web design
+                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                    Go
                                 </div>
-                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-400 text-sky-900">
-                                    Tailwind.css
+                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                    Docker
                                 </div>
-                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-rose-400 text-rose-900">
-                                    TypeScript
+                                <div className="rounded-md px-2 py-1 text-xs font-semibold bg-sky-900 text-white text-center">
+                                    K8s
                                 </div>
                             </div>
                         </div>
