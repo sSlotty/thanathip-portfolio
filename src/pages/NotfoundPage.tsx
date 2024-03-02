@@ -1,42 +1,38 @@
 /* eslint-disable jsx-a11y/alt-text */
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { Link } from 'react-router-dom';
 
-type Props = {}
+type Props = {};
 
 const NotfoundPage = (props: Props) => {
-    return (
-        <div className=" lg:px-24 lg:py-24 md:py-20 md:px-44 px-4 py-24 items-center flex justify-center flex-col-reverse lg:flex-row md:gap-28 gap-16">
-            <div className="xl:pt-24 w-full xl:w-1/2 relative pb-12 lg:pb-0">
-                <div className="relative">
-                    <div className="absolute">
-                        <div className="">
-                            <h1 className="my-2 text-gray-50 font-bold text-2xl">
-                                Looks like you've found the doorway to the great nothing
-                            </h1>
-                            <p className="my-2 text-gray-50">
-                                Sorry about that! Please visit our hompage to get where you need to
-                                go.
-                            </p>
-                            <Link to={'/'}>
-                                <button
-                                    className="sm:w-full lg:w-auto my-2 border rounded md py-4 px-8 text-center bg-gradient-to-br from-slate-500 to-sky-400 focus:ring-opacity-50">
-                                    Take me there!
-                                </button>
-                            </Link>
-                        </div>
-                    </div>
-                    <div>
-                        <img src="https://i.ibb.co/G9DC8S0/404-2.png" />
-                    </div>
-                </div>
-            </div>
-            <div>
-                <img src="https://i.ibb.co/ck1SGFJ/Group.png" />
-            </div>
+  return (
+    <div className="bg-gradient-to-r from-blue-950 to-blue-900">
+      <div className="w-9/12 m-auto py-16 min-h-screen flex items-center justify-center">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg pb-8">
+          <div className="border-t border-gray-200 text-center pt-8">
+            <h1 className="text-9xl font-bold text-blue-950">404</h1>
+            <h1 className="text-6xl font-medium py-8 text-black">
+              oops! Page not found
+            </h1>
+            <p className="text-2xl pb-8 px-12 font-medium text-black">
+              Oops! The page you are looking for does not exist. It might have
+              been moved or deleted.
+            </p>
+            <Link to="/">
+              <button className="bg-gradient-to-r from-purple-400 to-blue-500 hover:from-pink-500 hover:to-orange-500 text-white font-semibold px-6 py-3 rounded-md mr-6">
+                HOME
+              </button>
+            </Link>
+            <Link to="/contact">
+              <button className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-500 text-white font-semibold px-6 py-3 rounded-md">
+                Contact Us
+              </button>
+            </Link>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+};
 
-    )
-}
-
-export default NotfoundPage
+export default NotfoundPage;
