@@ -53,7 +53,7 @@ const TimelineItem = ({ experience }: { experience: WorkExperience }) => {
         <p className="text-lg font-semibold text-white">{companyName}</p>
         <div className="block mb-2 text-sm text-gray-400">{position}</div>
         <time className="block mb-2 text-sm text-gray-400">
-          {formatDate(startDate)} - {endDate ? formatDate(endDate) : 'Now'} [
+          {formatDate(startDate)} - {endDate ? formatDate(endDate) : 'Present'} [
           {decomposeDates(startDate, end)}]
         </time>
         <p className="block text-base text-gray-500">{description}</p>
