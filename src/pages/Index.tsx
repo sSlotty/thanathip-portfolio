@@ -23,7 +23,11 @@ const experiences: WorkExperience[] = [
     position: 'Backend developer (Internship)',
     startDate: new Date('2022-06-01'),
     endDate: new Date('2022-09-30'),
-    description: 'Learning about ELK Stack, Docker, and Golang.',
+    description: `
+    Learn how to use the Go language to develop applications that efficiently read large data files.
+    Install and test the ELK stack to process data and generate reports for administrators to review. Additionally, develop an API to retrieve data from Elasticsearch.
+    Test for internet faults from your home router.
+    `,
   },
 ];
 
