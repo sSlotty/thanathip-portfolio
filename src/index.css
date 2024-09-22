@@ -21,3 +21,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  left: 6px; /* Aligns with the center of the logo */
+  top: 0;
+  bottom: 0;
+  width: 2px; /* Line thickness */
+  background-color: #ddd; /* Line color */
+}
