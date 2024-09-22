@@ -11,7 +11,7 @@ const experiences: WorkExperience[] = [
     companyName: 'SCB',
     logoUrl: 'https://www.saijai.tech/wp-content/uploads/2022/10/scb-logo.png',
     altText: 'scb_logo',
-    position: 'Software Engineer Associate',
+    position: 'Software Engineer',
     startDate: new Date('2023-08-02'),
     description: `Develop the back-end system to verify the accuracy of payments before the actual deduction of funds. This includes tasks such as file verification, fee calculation, and sending information to the main system for fund deduction. Provide support for testing and modifying the system to meet business requirements, including checking logs and making adjustments in the SIT, UAT, and PRODUCTION environments.`,
   },
