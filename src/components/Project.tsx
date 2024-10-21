@@ -69,7 +69,7 @@ const ProjectComponent = (props: Props) => {
     },
     {
       title: 'Clinic Management',
-      image: 'https://cdn-icons-png.flaticon.com/512/3209/3209074.png',
+      image: 'https://cdn-icons-png.freepik.com/512/4521/4521401.png',
       link: 'https://github.com/sSlotty/clinic-api',
       description:
         'ระบบการจัดการคลินิก โดยใช้ React JS ในการเขียนหน้าเว็บและใช้ Flask Restful API ในการเชื่อมต่อกับฐานข้อมูล MongoDB',
