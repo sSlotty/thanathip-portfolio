@@ -13,7 +13,7 @@ const experiences: WorkExperience[] = [
     altText: 'scb_logo',
     position: 'Software Engineer',
     startDate: new Date('2023-08-02'),
-    description: `Develop the back-end system to verify the accuracy of payments before the actual deduction of funds. This includes tasks such as file verification, fee calculation, and sending information to the main system for fund deduction. Provide support for testing and modifying the system to meet business requirements, including checking logs and making adjustments in the SIT, UAT, and PRODUCTION environments.`,
+    description: `Develop the back-end system to verify the accuracy of payments before the actual deduction of funds. This includes tasks such as file verification, fee calculation, and sending information to the main system for fund deduction. Provide support for testing and modifying the system to meet business requirements, including checking logs and making adjustments in the SIT, UAT environments.`,
   },
   {
     companyName: 'True Crop.',
@@ -22,7 +22,7 @@ const experiences: WorkExperience[] = [
     altText: 'true_logo',
     position: 'Backend developer (Internship)',
     startDate: new Date('2022-06-01'),
-    endDate: new Date('2022-09-30'),
+    endDate: new Date('2022-07-31'),
     description: `
     Learn how to use the Go language to develop applications that efficiently read large data files.
     Install and test the ELK stack to process data and generate reports for administrators to review. Additionally, develop an API to retrieve data from Elasticsearch.
