@@ -61,7 +61,7 @@ const ProjectComponent = (props: Props) => {
     },
     {
       title: 'POS MON',
-      image: 'https://se-update.com/wp-content/uploads/2017/02/shop-icon.png',
+      image: 'https://cdn-icons-png.freepik.com/512/4990/4990333.png',
       link: 'https://github.com/sSlotty/POS-MON',
       description:
         'ระบบการจัดการร้านค้าโดยใช้ PHP ในการเขียนระบบหลังบ้านสำหรับการเชื่อมต่อกับฐานข้อมูล MySQL และใช้ JavaScript, HTML, CSS ในการเขียนหน้าเว็บ',
