@@ -53,7 +53,7 @@ const ProjectComponent = (props: Props) => {
   const projects = [
     {
       title: 'No-helmet detection using yolov5',
-      image: 'https://cdn-icons-png.flaticon.com/512/5234/5234748.png',
+      image: 'https://cdn-icons-png.flaticon.com/512/705/705668.png',
       link: 'https://github.com/camera-detects-helmet',
       description:
         'ระบบตรวจจับผู้ขับขี่รถจักรยานยนต์ที่ไม่สวมหมวนริภัย โดยใช้ ​YOLOv5 ในการตรวจจับและใช้ Go gin ในการสร้าง API สำหรับการติดต่อกับฐานข้อมูล MongoDB',
