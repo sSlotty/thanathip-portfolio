@@ -1,32 +1,34 @@
-import ProfileComponent from '../components/Profile';
-import ProjectComponent from '../components/Project';
-import SkillComponent from '../components/Skills';
-import TimelineWorkComponent from '../components/TimelineWork';
-import { WorkExperience } from '../types';
+import ProfileComponent from "../components/Profile";
+import ProjectComponent from "../components/Project";
+import SkillComponent from "../components/Skills";
+import TimelineWorkComponent from "../components/TimelineWork";
+import { WorkExperience } from "../types";
 
 type Props = {};
 
 const experiences: WorkExperience[] = [
   {
-    companyName: 'SCB',
-    logoUrl: 'https://www.saijai.tech/wp-content/uploads/2022/10/scb-logo.png',
-    altText: 'scb_logo',
-    position: 'Software Engineer',
-    startDate: new Date('2023-08-02'),
-    description: `Develop the back-end system to verify the accuracy of payments before the actual deduction of funds. This includes tasks such as file verification, fee calculation, and sending information to the main system for fund deduction. Provide support for testing and modifying the system to meet business requirements, including checking logs and making adjustments in the SIT, UAT environments.`,
+    companyName: "SCB",
+    logoUrl: "https://www.saijai.tech/wp-content/uploads/2022/10/scb-logo.png",
+    altText: "scb_logo",
+    position: "Software Engineer",
+    startDate: new Date("2023-08-02"),
+    description: `Corporate Banking Payment System | Transaction Processing Developer & System Designer
+
+Designed and developed enterprise-level payment processing systems for corporate banking. Focused on scalable architecture, secure transaction workflows, and seamless integration with core banking and third-party platforms. Specialized in transaction lifecycle management, system optimization, and backend development to support high-throughput, real-time financial operations.`,
   },
   {
-    companyName: 'True Crop.',
+    companyName: "True Crop.",
     logoUrl:
-      'https://upload.wikimedia.org/wikipedia/commons/1/1c/True_Corporation_%28Thailand%29.svg',
-    altText: 'true_logo',
-    position: 'Backend developer (Internship)',
-    startDate: new Date('2022-06-01'),
-    endDate: new Date('2022-07-31'),
+      "https://upload.wikimedia.org/wikipedia/commons/1/1c/True_Corporation_%28Thailand%29.svg",
+    altText: "true_logo",
+    position: "Backend developer (Internship)",
+    startDate: new Date("2022-06-01"),
+    endDate: new Date("2022-07-31"),
     description: `
-    Learn how to use the Go language to develop applications that efficiently read large data files.
-    Install and test the ELK stack to process data and generate reports for administrators to review. Additionally, develop an API to retrieve data from Elasticsearch.
-    Test for internet faults from your home router.
+    Learn to use Go for building efficient applications that handle large data files.
+    Install and test the ELK Stack to process data and generate admin reports.
+    Develop an API to fetch data from Elasticsearch and test internet connectivity from a home router.
     `,
   },
 ];
