@@ -58,50 +58,100 @@ const TimelineItem = ({
   };
 
   return (
-    <li className="relative mb-12 flex gap-6 animate-slide-in-left">
-      {/* Logo with Glow */}
-      <div className="flex-shrink-0 relative">
-        <div
-          className={`z-10 flex items-center justify-center w-16 h-16 bg-white rounded-2xl border-3 ${getBorderColor(index)} shadow-brutal-sm`}
-        >
-          <img
-            src={logoUrl}
-            alt={altText}
-            className="h-12 w-12 object-contain"
-          />
-        </div>
-        {isActive && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-neon-green rounded-full border-3 border-black animate-glow-pulse"></div>
-        )}
-      </div>
-
-      {/* Content Card */}
-      <div
-        className={`flex-1 glass-card-strong p-6 brutal-border-cyan brutal-hover`}
-      >
-        <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
-          <div>
-            <h3 className="text-2xl md:text-3xl font-black text-white mb-1">
-              {companyName}
-            </h3>
-            <p className="text-lg font-bold gradient-text-cyan">{position}</p>
+    <li className="relative mb-8 md:mb-12 animate-slide-in-left">
+      {/* Desktop Layout - Logo on Left */}
+      <div className="hidden md:flex gap-6">
+        {/* Logo with Glow */}
+        <div className="flex-shrink-0 relative">
+          <div
+            className={`z-10 flex items-center justify-center w-16 h-16 bg-white rounded-2xl border-3 ${getBorderColor(index)} shadow-brutal-sm`}
+          >
+            <img
+              src={logoUrl}
+              alt={altText}
+              className="h-12 w-12 object-contain"
+            />
           </div>
           {isActive && (
-            <span className="px-3 py-1 bg-neon-green text-black font-black text-xs border-3 border-black shadow-brutal-sm">
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-neon-green rounded-full border-3 border-black animate-glow-pulse"></div>
+          )}
+        </div>
+
+        {/* Content Card */}
+        <div
+          className={`flex-1 glass-card-strong p-6 brutal-border-cyan brutal-hover border-3`}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-black text-white mb-1">
+                {companyName}
+              </h3>
+              <p className="text-lg font-bold gradient-text-cyan">{position}</p>
+            </div>
+            {isActive && (
+              <span className="px-3 py-1 bg-neon-green text-black font-black text-xs border-3 border-black shadow-brutal-sm">
+                CURRENT
+              </span>
+            )}
+          </div>
+
+          <time className="block mb-4 text-sm font-bold text-gray-300">
+            📅 {formatDate(startDate)} -{" "}
+            {endDate ? formatDate(endDate) : "Present"}
+            <span className="ml-2 px-2 py-1 bg-black text-neon-yellow text-xs border-2 border-neon-yellow">
+              {decomposeDates(startDate, end)}
+            </span>
+          </time>
+
+          <p className="text-base text-gray-300 leading-relaxed whitespace-pre-line">
+            {description}
+          </p>
+        </div>
+      </div>
+
+      {/* Mobile Layout - Logo on Top Center */}
+      <div className="md:hidden glass-card-strong p-5 brutal-border-cyan border-3">
+        {/* Logo at Top Center */}
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            <div
+              className={`z-10 flex items-center justify-center w-16 h-16 bg-white rounded-2xl border-3 ${getBorderColor(index)} shadow-brutal-sm`}
+            >
+              <img
+                src={logoUrl}
+                alt={altText}
+                className="h-12 w-12 object-contain"
+              />
+            </div>
+            {isActive && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-green rounded-full border-2 border-black animate-glow-pulse"></div>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="text-center mb-4">
+          <h3 className="text-xl font-black text-white mb-2">{companyName}</h3>
+          <p className="text-base font-bold gradient-text-cyan mb-2">
+            {position}
+          </p>
+          {isActive && (
+            <span className="inline-block px-3 py-1 bg-neon-green text-black font-black text-xs border-2 border-black shadow-brutal-sm mb-2">
               CURRENT
             </span>
           )}
         </div>
 
-        <time className="block mb-4 text-sm font-bold text-gray-300">
+        <time className="block mb-4 text-xs font-bold text-gray-300 text-center">
           📅 {formatDate(startDate)} -{" "}
           {endDate ? formatDate(endDate) : "Present"}
-          <span className="ml-2 px-2 py-1 bg-black text-neon-yellow text-xs border-2 border-neon-yellow">
+          <br />
+          <span className="inline-block mt-1 px-2 py-1 bg-black text-neon-yellow text-xs border-2 border-neon-yellow">
             {decomposeDates(startDate, end)}
           </span>
         </time>
 
-        <p className="text-base text-gray-300 leading-relaxed whitespace-pre-line">
+        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line text-left">
           {description}
         </p>
       </div>
