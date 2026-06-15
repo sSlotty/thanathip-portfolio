@@ -56,18 +56,18 @@ const Index = (props: Props) => {
   return (
     <div className="min-h-screen bg-grid-pattern relative">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-lg bg-deep-space/80 border-b-3 border-neon-cyan shadow-brutal">
-        <div className="mx-auto max-w-screen-lg px-3 py-4">
-          <div className="flex flex-col gap-y-3 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-white text-2xl md:text-3xl font-black gradient-text-multi">
+      <header className="sticky top-0 z-50 backdrop-blur-lg bg-deep-space/95 border-b-2 md:border-b-3 border-neon-cyan shadow-brutal">
+        <div className="mx-auto max-w-screen-lg px-3 md:px-6 py-3 md:py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-white text-lg sm:text-xl md:text-3xl font-black gradient-text-multi">
               THANATHIP C.
             </h1>
-            <nav>
-              <ul className="flex gap-x-2 lg:gap-x-4 font-bold text-xs lg:text-sm">
+            <nav className="hidden md:block">
+              <ul className="flex gap-x-4 font-bold text-sm">
                 <li>
                   <a
                     href="#hero"
-                    className="px-2 lg:px-3 py-2 text-white hover:text-neon-cyan transition-all duration-200"
+                    className="px-3 py-2 text-white hover:text-neon-cyan transition-all duration-200"
                   >
                     Home
                   </a>
@@ -75,7 +75,7 @@ const Index = (props: Props) => {
                 <li>
                   <a
                     href="#about"
-                    className="px-2 lg:px-3 py-2 text-white hover:text-neon-purple transition-all duration-200"
+                    className="px-3 py-2 text-white hover:text-neon-purple transition-all duration-200"
                   >
                     About
                   </a>
@@ -83,7 +83,7 @@ const Index = (props: Props) => {
                 <li>
                   <a
                     href="#work-experiences"
-                    className="px-2 lg:px-3 py-2 text-white hover:text-neon-pink transition-all duration-200"
+                    className="px-3 py-2 text-white hover:text-neon-pink transition-all duration-200"
                   >
                     Experience
                   </a>
@@ -91,7 +91,7 @@ const Index = (props: Props) => {
                 <li>
                   <a
                     href="#skills"
-                    className="px-2 lg:px-3 py-2 text-white hover:text-neon-yellow transition-all duration-200"
+                    className="px-3 py-2 text-white hover:text-neon-yellow transition-all duration-200"
                   >
                     Skills
                   </a>
@@ -99,7 +99,7 @@ const Index = (props: Props) => {
                 <li>
                   <a
                     href="#projects"
-                    className="px-2 lg:px-3 py-2 text-white hover:text-neon-green transition-all duration-200"
+                    className="px-3 py-2 text-white hover:text-neon-green transition-all duration-200"
                   >
                     Projects
                   </a>
@@ -109,9 +109,38 @@ const Index = (props: Props) => {
                     href="https://github.com/sSlotty"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 lg:px-4 py-2 bg-neon-cyan text-black font-black border-3 border-black shadow-brutal-sm hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-brutal transition-all"
+                    className="px-4 py-2 bg-neon-cyan text-black font-black border-3 border-black shadow-brutal-sm hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-brutal transition-all"
                   >
                     GitHub
+                  </a>
+                </li>
+              </ul>
+            </nav>
+            {/* Mobile Menu */}
+            <nav className="md:hidden">
+              <ul className="flex gap-x-1 font-bold text-xs">
+                <li>
+                  <a
+                    href="#about"
+                    className="px-2 py-1.5 text-white hover:text-neon-cyan transition-all"
+                  >
+                    About
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#work-experiences"
+                    className="px-2 py-1.5 text-white hover:text-neon-purple transition-all"
+                  >
+                    Work
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#projects"
+                    className="px-2 py-1.5 text-white hover:text-neon-pink transition-all"
+                  >
+                    Projects
                   </a>
                 </li>
               </ul>
@@ -185,15 +214,15 @@ const Index = (props: Props) => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t-3 border-neon-purple bg-deep-space py-12">
-        <div className="mx-auto max-w-screen-lg px-3">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+      <footer className="border-t-2 md:border-t-3 border-neon-purple bg-deep-space py-8 md:py-12">
+        <div className="mx-auto max-w-screen-lg px-4 md:px-6 lg:px-3">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
             {/* Brand */}
             <div>
-              <h3 className="text-2xl font-black gradient-text-multi mb-3">
+              <h3 className="text-xl md:text-2xl font-black gradient-text-multi mb-2 md:mb-3">
                 THANATHIP C.
               </h3>
-              <p className="text-gray-400">
+              <p className="text-sm md:text-base text-gray-400">
                 Backend Engineer • Enterprise Payment Systems & Financial
                 Technology
               </p>
@@ -201,10 +230,10 @@ const Index = (props: Props) => {
 
             {/* Quick Links */}
             <div>
-              <h4 className="text-lg font-black text-white mb-3">
+              <h4 className="text-base md:text-lg font-black text-white mb-2 md:mb-3">
                 QUICK LINKS
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-1 md:space-y-2 text-sm md:text-base">
                 <li>
                   <a
                     href="#about"
@@ -242,10 +271,10 @@ const Index = (props: Props) => {
 
             {/* Contact */}
             <div>
-              <h4 className="text-lg font-black text-white mb-3">
+              <h4 className="text-base md:text-lg font-black text-white mb-2 md:mb-3">
                 GET IN TOUCH
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-1 md:space-y-2 text-sm md:text-base">
                 <li>
                   <a
                     href="mailto:thanathipch9@gmail.com"
