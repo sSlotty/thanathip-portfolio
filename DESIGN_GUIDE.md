@@ -1,164 +1,118 @@
-# 🎨 Portfolio Design System - Neobrutalism meets Glassmorphism
+# 🎨 Portfolio Design System — Claymorphism on a WebGL Stage
 
 ## Overview
-This portfolio combines **Neobrutalism** (bold, unapologetic design) with **Glassmorphism** (transparent, frosted glass effects) to create a unique 2026-style web experience.
 
-## 🎯 Design Philosophy
+The portfolio pairs a **real 3D WebGL scene** with a **claymorphic UI**. A
+hand-written fragment shader raymarches soft clay blobs behind the page; every
+surface above it is a puffy clay slab that tilts toward the pointer.
 
-### Neobrutalism Elements
-- **Bold Borders**: Thick 3-5px borders in black and neon colors
-- **Brutal Shadows**: Hard drop shadows (8px 8px) instead of soft blur
-- **Vibrant Colors**: Neon cyan, purple, pink, yellow as primary accents
-- **High Contrast**: Strong visual hierarchy with black/white/neon palette
-- **Geometric Shapes**: Squares, circles, triangles as decorative elements
+No 3D library is used — `three.js` and friends are not dependencies. The scene
+is ~180 lines of GLSL in [src/webgl/ShaderBackground.tsx](src/webgl/ShaderBackground.tsx).
 
-### Glassmorphism Elements
-- **Frosted Glass Cards**: Semi-transparent backgrounds with backdrop blur
-- **Subtle Borders**: 2-3px borders with rgba white
-- **Layered Depth**: Multiple glass layers create spatial hierarchy
-- **Smooth Gradients**: Multi-color gradients for text and backgrounds
+## 🧱 The two layers
 
-## 🎨 Color Palette
+### 1. The WebGL stage (`src/webgl/ShaderBackground.tsx`)
 
-### Neon Accents
+A full-screen quad running a signed-distance-field raymarcher:
+
+- Four spheres blended with a polynomial `smin()` so they melt together
+- Clay shading: wrapped diffuse, a soft fill light, a wide rim, minimal specular
+- The camera drifts toward the pointer and always looks at the origin
+- A bounding-sphere test lets background pixels skip the march entirely
+
+**Performance guards** — the scene renders at 0.5× DPR on desktop and 0.35× on
+mobile, pauses on `visibilitychange`, and draws a short burst instead of an
+endless loop under `prefers-reduced-motion`. The canvas only fades in after a
+frame has actually landed, so a failed context leaves the CSS gradient showing
+rather than a black rectangle.
+
+### 2. The clay UI (`src/index.css`)
+
+Claymorphism is a shadow recipe, not a colour: a soft coloured drop shadow
+below, a white bounce above, and inner shadows on the opposite diagonal so the
+slab reads as thick.
+
 ```css
---neon-cyan: #00F5FF       /* Primary accent */
---neon-purple: #BD00FF     /* Secondary accent */
---neon-pink: #FF006E       /* Tertiary accent */
---neon-yellow: #FFD60A     /* Warning/highlight */
---neon-green: #39FF14      /* Success/active */
+box-shadow:
+  24px 30px 54px -18px rgba(var(--accent-rgb), 0.52),  /* coloured drop  */
+  0 2px 10px -4px rgba(42, 35, 80, 0.14),              /* contact shadow */
+  -14px -14px 34px -18px rgba(255, 255, 255, 0.95),    /* white bounce   */
+  inset -7px -9px 18px -8px rgba(var(--accent-rgb), 0.28),
+  inset 8px 10px 20px -6px rgba(255, 255, 255, 0.95);
 ```
 
-### Base Colors
-```css
---deep-space: #0A0E27     /* Background primary */
---space-navy: #151B3B     /* Background secondary */
---glass-white: rgba(255, 255, 255, 0.1)
---glass-border: rgba(255, 255, 255, 0.2)
-```
+## 🎨 Palette
 
-## 📦 Component Styles
+Every accent ships as a pair. The light value tints surfaces; the `-ink` value
+sets type, because the light values do not clear contrast on white.
 
-### Glass Cards
+| Token | Surface | Ink (for text) |
+|---|---|---|
+| violet | `#7C6CF5` | `#5B48D9` |
+| pink | `#FF7B9C` | `#D93B68` |
+| mint | `#35CBB8` | `#12897B` |
+| amber | `#FFB547` | `#A9700A` |
+| sky | `#4CC2F0` | `#0E82B5` |
+
+Base: `--bg #EEF0FF`, `--surface #FFFFFF`, `--ink #2A2350`, `--ink-dim #6F68A0`.
+
+Set an accent by adding `accent-violet` / `accent-pink` / `accent-mint` /
+`accent-amber` / `accent-sky` to any element — it rebinds `--accent`,
+`--accent-ink` and `--accent-rgb` for that subtree.
+
+## 📦 Components
+
+### `<ClayCard>` — [src/components/ui/ClayCard.tsx](src/components/ui/ClayCard.tsx)
+
 ```jsx
-// Light glass
-className="glass-card"
-
-// Strong glass (more opacity)
-className="glass-card-strong"
+<ClayCard accent="violet" className="p-8" stageClassName="lg:col-span-2" tilt={5} delay={80}>
+  …
+</ClayCard>
 ```
 
-### Brutal Borders
-```jsx
-// Black border with black shadow
-className="brutal-border"
+- `stageClassName` takes **layout** classes (grid spans, flex) — it is the
+  perspective wrapper
+- `className` takes **visual** classes — it is the slab itself
+- `tilt={0}` disables pointer tracking
 
-// Colored borders with matching shadows
-className="brutal-border-cyan"
-className="brutal-border-purple"
-className="brutal-border-pink"
-className="brutal-border-yellow"
-```
+### `<SectionHeading>` — pill label, extruded highlight word, subtitle.
 
-### Hover Effects
-```jsx
-// Brutal hover (lifts with stronger shadow)
-className="brutal-hover"
+### CSS utilities
 
-// Glass hover (more opacity + lift)
-className="glass-hover"
-```
+| Class | Use |
+|---|---|
+| `.clay-card` | the slab (via `<ClayCard>`) |
+| `.clay-well` | pressed-in dish for icons and logos |
+| `.chip-clay` / `.chip-solid` | pill tags |
+| `.btn-clay` / `.btn-solid` | buttons, with a real squash on `:active` |
+| `.clay-orb` | floating 3D-shaded sphere |
+| `.text-pop` | extruded gradient word (needs `data-text`); add `.is-flat` for small type |
+| `.tint-violet` … | accent-ink text colours |
 
-## ✨ Animations
+## 🌀 Motion
 
-### Entrance Animations
-- `animate-slide-up` - Slide in from bottom
-- `animate-slide-in-left` - Slide in from left
-- `animate-slide-in-right` - Slide in from right
-- `animate-scale-in` - Scale up with fade
+| Hook | Job |
+|---|---|
+| `useTilt` | writes `--rx/--ry` (rotation) and `--mx/--my` (sheen) on pointer move |
+| `useReveal` | one IntersectionObserver flies `[data-reveal]` in from depth |
+| `useScrollDepth` | publishes `--scroll-y` / `--scroll-progress` on `<html>` |
 
-### Continuous Animations
-- `animate-float` - Floating motion (decorative elements)
-- `animate-tilt` - Subtle rotation animation
-- `animate-glow-pulse` - Pulsing glow effect
-- `animate-gradient-shift` - Gradient color shift
+`useTilt` opts out on coarse pointers and under reduced motion; `useReveal`
+reveals everything immediately under reduced motion.
 
-## 🔤 Typography
+## ⚠️ Gotchas
 
-### Font Stack
-```css
-font-family: 'Space Grotesk', 'Inter', sans-serif;
-```
+- **`backdrop-filter` flattens 3D.** It is a grouping property, so an element
+  carrying it computes `transform-style: flat` and every `translateZ` inside is
+  cancelled. Put the blur on a pseudo-element if a panel needs both.
+- **`perspective` vs `perspective()`.** The property projects an element's
+  *children*; the function projects the element *itself*. `[data-reveal]`
+  transforms itself, so it uses the function.
+- **Tailwind has no 3D utilities** in 3.3 — `perspective-*`, `preserve-3d` and
+  `translate-z-*` come from the inline plugin in `tailwind.config.js`.
 
-### Text Styles
-```jsx
-// Gradient text effects
-className="gradient-text-cyan"
-className="gradient-text-purple"
-className="gradient-text-multi"
+## ♿ Accessibility
 
-// Glow effects
-className="text-glow-cyan"
-className="text-glow-purple"
-```
-
-## 🎭 Patterns & Backgrounds
-
-### Background Patterns
-```jsx
-className="bg-grid-pattern"    // Grid overlay
-className="bg-dots-pattern"    // Dots overlay
-```
-
-### Geometric Shapes (Decorative)
-```jsx
-<div className="geometric-shape geometric-circle text-neon-cyan" />
-<div className="geometric-shape geometric-square text-neon-purple" />
-<div className="geometric-shape geometric-triangle text-neon-yellow" />
-```
-
-## 📱 Responsive Design
-
-### Breakpoints
-- Mobile: 375px+
-- Tablet: 768px+
-- Desktop: 1024px+
-- Large: 1920px+
-
-### Mobile Considerations
-- Simplified animations on mobile
-- Stack layouts vertically
-- Hide decorative geometric shapes
-- Larger touch targets (min 44px)
-
-## 🚀 Performance
-
-- Use `will-change` sparingly
-- Lazy load images
-- Optimize glass blur effects
-- Limit concurrent animations
-
-## 📝 Usage Examples
-
-### Creating a Card
-```jsx
-<div className="glass-card-strong brutal-border-cyan brutal-hover p-6">
-  <h2 className="font-black text-white gradient-text-multi">Title</h2>
-  <p className="text-gray-300">Content</p>
-</div>
-```
-
-### Button with Brutal Style
-```jsx
-<button className="px-6 py-3 bg-neon-cyan text-black font-bold border-3 border-black shadow-brutal hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-brutal-lg transition-all">
-  Click Me
-</button>
-```
-
-## 🎯 Best Practices
-
-1. **Contrast**: Always ensure text has sufficient contrast
-2. **Accessibility**: Maintain WCAG AA standards minimum
-3. **Animation**: Keep animations under 0.5s for interactions
-4. **Colors**: Use neon colors as accents, not backgrounds
-5. **Spacing**: Maintain consistent padding/margins (multiples of 4px)
+- Accent text always uses the `-ink` value; light accents are for fills only
+- `prefers-reduced-motion` disables tilt, reveal, and shader animation
+- `:focus-visible` gets a 3px violet ring at 3px offset

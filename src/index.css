@@ -1,9 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap");
 
-/* === NEOBRUTALISM + GLASSMORPHISM DESIGN SYSTEM === */
+/* ===================================================================
+   CLAY — claymorphism on a 3D / WebGL stage
+   A raymarched SDF scene paints soft clay blobs behind the page; every
+   surface above it is a puffy clay slab: big radii, a coloured drop
+   shadow below, a white highlight above, and matching inner shadows so
+   the material looks pressed rather than drawn.
+   =================================================================== */
+
+:root {
+  --bg: #eef0ff;
+  --surface: #ffffff;
+  --surface-2: #f7f5ff;
+
+  --violet: #7c6cf5;
+  --pink: #ff7b9c;
+  --mint: #35cbb8;
+  --amber: #ffb547;
+  --sky: #4cc2f0;
+
+  /* Darker companions — accents are too light to set type on white. */
+  --violet-ink: #5b48d9;
+  --pink-ink: #d93b68;
+  --mint-ink: #12897b;
+  --amber-ink: #a9700a;
+  --sky-ink: #0e82b5;
+
+  --ink: #2a2350;
+  --ink-dim: #6f68a0;
+  --ink-faint: #a49ec7;
+
+  --perspective: 1200px;
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-squish: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Default accent; .accent-* overrides it per element. */
+  --accent: var(--violet);
+  --accent-ink: var(--violet-ink);
+  --accent-rgb: 124, 108, 245;
+}
 
 html {
   scroll-behavior: smooth;
@@ -12,229 +50,635 @@ html {
 }
 
 body {
-  font-family: "Space Grotesk", "Inter", sans-serif;
+  margin: 0;
+  font-family: Nunito, ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  font-weight: 600;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: whitesmoke;
-  background: linear-gradient(135deg, #0a0e27 0%, #151b3b 50%, #1a1f3a 100%);
+  color: var(--ink);
+  /* Also the fallback if WebGL is unavailable. */
+  background:
+    radial-gradient(80% 60% at 15% 85%, rgba(255, 233, 226, 0.9), transparent 70%),
+    radial-gradient(70% 60% at 85% 10%, rgba(225, 230, 255, 0.95), transparent 70%),
+    linear-gradient(180deg, #f8f6ff 0%, var(--bg) 100%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
 
-code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+code,
+.mono {
+  font-family: "JetBrains Mono", source-code-pro, Menlo, Consolas, monospace;
 }
 
-/* === GLASSMORPHIC CARD === */
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
+/* === WEBGL BACKDROP ================================================ */
 
-.glass-card-strong {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-}
-
-/* === NEOBRUTALIST ELEMENTS === */
-.brutal-border {
-  border: 4px solid #000;
-  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
-}
-
-.brutal-border-cyan {
-  border: 4px solid #00f5ff;
-  box-shadow: 8px 8px 0px 0px #00f5ff;
-}
-
-.brutal-border-purple {
-  border: 4px solid #bd00ff;
-  box-shadow: 8px 8px 0px 0px #bd00ff;
-}
-
-.brutal-border-pink {
-  border: 4px solid #ff006e;
-  box-shadow: 8px 8px 0px 0px #ff006e;
-}
-
-.brutal-border-yellow {
-  border: 4px solid #ffd60a;
-  box-shadow: 8px 8px 0px 0px #ffd60a;
-}
-
-/* === HOVER EFFECTS === */
-.brutal-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.brutal-hover:hover {
-  transform: translate(-4px, -4px);
-  box-shadow: 12px 12px 0px 0px rgba(0, 0, 0, 1);
-}
-
-.glass-hover {
-  transition: all 0.3s ease;
-}
-
-.glass-hover:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
-}
-
-/* === GRADIENT TEXT === */
-.gradient-text-cyan {
-  background: linear-gradient(135deg, #00f5ff 0%, #00d4ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-purple {
-  background: linear-gradient(135deg, #bd00ff 0%, #9d00d9 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-multi {
-  background: linear-gradient(135deg, #00f5ff 0%, #bd00ff 50%, #ff006e 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-shift 8s ease infinite;
-}
-
-/* === GLOW EFFECTS === */
-.glow-cyan {
-  box-shadow:
-    0 0 20px rgba(0, 245, 255, 0.5),
-    0 0 40px rgba(0, 245, 255, 0.3);
-}
-
-.glow-purple {
-  box-shadow:
-    0 0 20px rgba(189, 0, 255, 0.5),
-    0 0 40px rgba(189, 0, 255, 0.3);
-}
-
-.glow-pink {
-  box-shadow:
-    0 0 20px rgba(255, 0, 110, 0.5),
-    0 0 40px rgba(255, 0, 110, 0.3);
-}
-
-.text-glow-cyan {
-  text-shadow:
-    0 0 20px rgba(0, 245, 255, 0.8),
-    0 0 40px rgba(0, 245, 255, 0.4);
-}
-
-.text-glow-purple {
-  text-shadow:
-    0 0 20px rgba(189, 0, 255, 0.8),
-    0 0 40px rgba(189, 0, 255, 0.4);
-}
-
-/* === BACKGROUND PATTERNS === */
-.bg-grid-pattern {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
-}
-
-.bg-dots-pattern {
-  background-image: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 1px,
-    transparent 1px
-  );
-  background-size: 30px 30px;
-}
-
-/* === GEOMETRIC SHAPES === */
-.geometric-shape {
-  position: absolute;
-  opacity: 0.1;
+.scene-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
 }
 
-.geometric-triangle {
-  width: 0;
-  height: 0;
-  border-left: 100px solid transparent;
-  border-right: 100px solid transparent;
-  border-bottom: 173px solid currentColor;
+.scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s ease-out;
 }
 
-.geometric-circle {
-  width: 200px;
-  height: 200px;
+/* Faded in once the first frame lands; hidden again if the GPU context is
+   lost, exposing the CSS gradient underneath. */
+.scene-canvas.is-ready:not(.is-lost) {
+  opacity: 1;
+}
+
+/* Milky wash so the blobs never fight the text sitting over them. */
+.scene-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(245, 245, 255, 0.3) 0%,
+    rgba(238, 240, 255, 0.42) 45%,
+    rgba(238, 240, 255, 0.52) 100%
+  );
+}
+
+/* === CLAY SURFACES ================================================= */
+
+.clay-stage {
+  perspective: var(--perspective);
+  perspective-origin: 50% 50%;
+}
+
+/* The clay recipe: a soft coloured shadow below, a white bounce above,
+   then inner shadows on the opposite diagonal so the slab looks thick. */
+.clay-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  --lift: 16px;
+
+  position: relative;
+  height: 100%;
+  border-radius: 34px;
+  background: linear-gradient(
+    160deg,
+    var(--surface) 0%,
+    var(--surface-2) 100%
+  );
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition:
+    transform 0.55s var(--ease-out-expo),
+    box-shadow 0.55s var(--ease-out-expo);
+  box-shadow:
+    24px 30px 54px -18px rgba(var(--accent-rgb), 0.52),
+    0 2px 10px -4px rgba(42, 35, 80, 0.14),
+    -14px -14px 34px -18px rgba(255, 255, 255, 0.95),
+    inset -7px -9px 18px -8px rgba(var(--accent-rgb), 0.28),
+    inset 8px 10px 20px -6px rgba(255, 255, 255, 0.95);
+}
+
+/* Squishier while the pointer is actually driving it. */
+.clay-card.is-tilting {
+  transition-duration: 0.14s;
+  box-shadow:
+    30px 38px 62px -20px rgba(var(--accent-rgb), 0.5),
+    -16px -16px 40px -18px rgba(255, 255, 255, 1),
+    inset -9px -11px 22px -8px rgba(var(--accent-rgb), 0.32),
+    inset 10px 12px 24px -6px rgba(255, 255, 255, 1);
+}
+
+.clay-card__body {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  transform: translateZ(0);
+  transition: transform 0.45s var(--ease-out-expo);
+}
+
+.clay-card.is-tilting .clay-card__body {
+  transform: translateZ(var(--lift));
+}
+
+/* Soft sheen tracking the pointer — the wet spot on a clay surface. */
+.clay-card__glare {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    460px circle at var(--mx) var(--my),
+    rgba(255, 255, 255, 0.85),
+    rgba(var(--accent-rgb), 0.05) 38%,
+    transparent 66%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.clay-card.is-tilting .clay-card__glare {
+  opacity: 1;
+}
+
+/* Tinted variant — the panel itself takes the accent colour. */
+.clay-card.is-tinted {
+  background: linear-gradient(
+    160deg,
+    rgba(var(--accent-rgb), 0.16) 0%,
+    rgba(var(--accent-rgb), 0.08) 100%
+  );
+}
+
+.accent-violet {
+  --accent: var(--violet);
+  --accent-ink: var(--violet-ink);
+  --accent-rgb: 124, 108, 245;
+}
+.accent-pink {
+  --accent: var(--pink);
+  --accent-ink: var(--pink-ink);
+  --accent-rgb: 255, 123, 156;
+}
+.accent-mint {
+  --accent: var(--mint);
+  --accent-ink: var(--mint-ink);
+  --accent-rgb: 53, 203, 184;
+}
+.accent-amber {
+  --accent: var(--amber);
+  --accent-ink: var(--amber-ink);
+  --accent-rgb: 255, 181, 71;
+}
+.accent-sky {
+  --accent: var(--sky);
+  --accent-ink: var(--sky-ink);
+  --accent-rgb: 76, 194, 240;
+}
+
+/* Small pressed-in well, for icons and logos. */
+.clay-well {
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(
+    160deg,
+    rgba(var(--accent-rgb), 0.18),
+    rgba(var(--accent-rgb), 0.08)
+  );
+  box-shadow:
+    inset 5px 6px 12px -4px rgba(var(--accent-rgb), 0.45),
+    inset -4px -5px 12px -4px rgba(255, 255, 255, 0.95),
+    6px 8px 18px -10px rgba(var(--accent-rgb), 0.5);
+  transition: transform 0.45s var(--ease-squish);
+}
+
+.clay-well:hover {
+  transform: translateZ(20px) scale(1.04);
+}
+
+/* Inner elements that ride further out of the slab than its body. */
+.layer-near {
+  transform: translateZ(26px);
+}
+
+/* === TYPE ========================================================== */
+
+.text-clay {
+  color: var(--ink);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9),
+    0 3px 10px rgba(124, 108, 245, 0.22);
+}
+
+/* Extruded highlight word: the gradient fill sits on the element, the
+   ::before clone is offset behind it to become the clay extrusion. */
+.text-pop {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  background: linear-gradient(
+    120deg,
+    var(--violet) 0%,
+    #a06cf5 42%,
+    var(--pink) 100%
+  );
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: clay-drift 9s ease-in-out infinite;
+}
+
+.text-pop::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  -webkit-text-fill-color: rgba(124, 108, 245, 0.22);
+  color: rgba(124, 108, 245, 0.22);
+  text-shadow:
+    2px 3px 0 rgba(124, 108, 245, 0.14),
+    4px 6px 0 rgba(255, 123, 156, 0.1),
+    6px 10px 22px rgba(124, 108, 245, 0.3);
+  transform: translate(-2px, 4px);
+}
+
+/* Flat variant for small type, where the extrusion just reads as blur. */
+.text-pop.is-flat::before {
+  display: none;
+}
+
+.text-accent {
+  color: var(--accent-ink);
+}
+
+.tint-violet {
+  color: var(--violet-ink);
+}
+.tint-pink {
+  color: var(--pink-ink);
+}
+.tint-mint {
+  color: var(--mint-ink);
+}
+.tint-amber {
+  color: var(--amber-ink);
+}
+
+/* === SECTION HEADINGS ============================================== */
+
+.section-heading {
+  margin-bottom: 2.25rem;
+}
+
+.section-heading__index {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: rgba(var(--accent-rgb), 0.14);
+  box-shadow:
+    inset 3px 4px 8px -3px rgba(var(--accent-rgb), 0.4),
+    inset -3px -3px 8px -3px rgba(255, 255, 255, 0.9);
+}
+
+.section-heading__title {
+  font-size: clamp(2.1rem, 6vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--ink);
+}
+
+.section-heading__subtitle {
+  margin: 0.9rem 0 0;
+  color: var(--ink-dim);
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  font-weight: 600;
+  max-width: 48ch;
+}
+
+/* === CHIPS & BUTTONS =============================================== */
+
+.chip-clay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    160deg,
+    rgba(var(--accent-rgb), 0.16),
+    rgba(var(--accent-rgb), 0.08)
+  );
+  color: var(--accent-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow:
+    4px 6px 12px -8px rgba(var(--accent-rgb), 0.7),
+    inset -3px -3px 8px -3px rgba(var(--accent-rgb), 0.3),
+    inset 3px 4px 8px -3px rgba(255, 255, 255, 0.95);
+  transition:
+    transform 0.35s var(--ease-squish),
+    box-shadow 0.35s ease;
+}
+
+.chip-clay:hover {
+  transform: translateY(-2px) translateZ(14px);
+  box-shadow:
+    6px 10px 18px -8px rgba(var(--accent-rgb), 0.8),
+    inset -3px -3px 8px -3px rgba(var(--accent-rgb), 0.35),
+    inset 3px 4px 8px -3px rgba(255, 255, 255, 1);
+}
+
+.chip-solid {
+  background: linear-gradient(
+    160deg,
+    rgba(var(--accent-rgb), 1),
+    rgba(var(--accent-rgb), 0.82)
+  );
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    6px 8px 16px -8px rgba(var(--accent-rgb), 0.9),
+    inset -3px -4px 10px -3px rgba(0, 0, 0, 0.16),
+    inset 3px 4px 10px -3px rgba(255, 255, 255, 0.5);
+}
+
+.btn-clay {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  border: 0;
+  border-radius: 20px;
+  background: linear-gradient(160deg, var(--surface), var(--surface-2));
+  color: var(--accent-ink);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  box-shadow:
+    10px 14px 26px -12px rgba(var(--accent-rgb), 0.6),
+    -6px -6px 18px -10px rgba(255, 255, 255, 1),
+    inset -4px -5px 12px -5px rgba(var(--accent-rgb), 0.3),
+    inset 5px 6px 14px -5px rgba(255, 255, 255, 1);
+  transition:
+    transform 0.35s var(--ease-squish),
+    box-shadow 0.35s ease;
+}
+
+.btn-clay:hover {
+  transform: translateY(-3px) translateZ(18px);
+  box-shadow:
+    14px 20px 34px -14px rgba(var(--accent-rgb), 0.7),
+    -8px -8px 22px -10px rgba(255, 255, 255, 1),
+    inset -4px -5px 12px -5px rgba(var(--accent-rgb), 0.32),
+    inset 5px 6px 14px -5px rgba(255, 255, 255, 1);
+}
+
+/* Pressing squashes it into the surface — the payoff of a clay button. */
+.btn-clay:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow:
+    4px 6px 12px -10px rgba(var(--accent-rgb), 0.6),
+    inset 6px 8px 16px -6px rgba(var(--accent-rgb), 0.45),
+    inset -4px -4px 12px -6px rgba(255, 255, 255, 0.9);
+}
+
+.btn-solid {
+  background: linear-gradient(
+    160deg,
+    rgba(var(--accent-rgb), 1),
+    rgba(var(--accent-rgb), 0.84)
+  );
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    12px 16px 28px -12px rgba(var(--accent-rgb), 0.75),
+    inset -5px -6px 14px -5px rgba(0, 0, 0, 0.18),
+    inset 5px 6px 14px -5px rgba(255, 255, 255, 0.55);
+}
+
+.btn-solid:hover {
+  box-shadow:
+    16px 22px 36px -14px rgba(var(--accent-rgb), 0.85),
+    inset -5px -6px 14px -5px rgba(0, 0, 0, 0.2),
+    inset 5px 6px 14px -5px rgba(255, 255, 255, 0.6);
+}
+
+/* === FLOATING CLAY ORBS ============================================ */
+
+.clay-orb {
+  position: absolute;
   border-radius: 50%;
-  background: currentColor;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 32% 28%,
+    #fff 0%,
+    rgba(var(--accent-rgb), 0.9) 42%,
+    rgba(var(--accent-rgb), 0.65) 100%
+  );
+  box-shadow:
+    24px 30px 50px -18px rgba(var(--accent-rgb), 0.55),
+    inset -10px -14px 28px -8px rgba(var(--accent-rgb), 0.55),
+    inset 10px 12px 26px -6px rgba(255, 255, 255, 0.85);
 }
 
-.geometric-square {
-  width: 150px;
-  height: 150px;
-  background: currentColor;
-  transform: rotate(45deg);
+/* === STATUS DOT ==================================================== */
+
+.pulse-dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow:
+    inset -2px -2px 4px rgba(0, 0, 0, 0.15),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+    0 0 10px rgba(53, 203, 184, 0.7);
 }
 
-/* === TIMELINE WORK === */
-.timeline-item::after {
+.pulse-dot::after {
   content: "";
   position: absolute;
-  left: 6px;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, #00f5ff 0%, #bd00ff 50%, #ff006e 100%);
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(53, 203, 184, 0.6);
+  animation: pulse-out 2.2s ease-out infinite;
 }
 
-/* === SCROLL ANIMATIONS === */
-.fade-in {
+/* === TIMELINE ====================================================== */
+
+/* Centred under the 80px logo node (40px - half the 8px rail). */
+.timeline-rail {
+  position: absolute;
+  left: 36px;
+  top: 12px;
+  bottom: 12px;
+  width: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(124, 108, 245, 0.55) 0%,
+    rgba(255, 123, 156, 0.4) 60%,
+    rgba(255, 181, 71, 0) 100%
+  );
+  box-shadow:
+    inset 2px 2px 5px -1px rgba(124, 108, 245, 0.55),
+    inset -2px -2px 5px -1px rgba(255, 255, 255, 0.95);
+}
+
+/* === NAV =========================================================== */
+
+.nav-shell {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 14px 34px -24px rgba(42, 35, 80, 0.55);
+}
+
+.nav-link {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    color 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s var(--ease-squish);
+}
+
+.nav-link:hover {
+  color: var(--accent-ink);
+  background: rgba(var(--accent-rgb), 0.12);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 3px 4px 8px -3px rgba(var(--accent-rgb), 0.35),
+    inset -3px -3px 8px -3px rgba(255, 255, 255, 0.95);
+}
+
+/* === REVEAL ======================================================== */
+
+[data-reveal] {
   opacity: 0;
-  animation: fadeIn 0.6s ease-out forwards;
+  /* perspective() rather than the perspective property: the reveal transform
+     applies to this element, so it needs its own projection to read as depth. */
+  transform: perspective(1400px) translate3d(0, 46px, -110px) rotateX(8deg);
+  transition:
+    opacity 0.85s var(--ease-out-expo) var(--delay, 0ms),
+    transform 0.95s var(--ease-out-expo) var(--delay, 0ms);
+  will-change: transform, opacity;
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* === KEYFRAMES ===================================================== */
+
+@keyframes clay-drift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
-/* === CUSTOM SCROLLBAR === */
+@keyframes float-z {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0);
+  }
+}
+
+@keyframes pulse-out {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+.animate-float-z {
+  animation: float-z 7s ease-in-out infinite;
+}
+
+/* === CHROME ======================================================== */
+
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 14px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0e27;
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00f5ff 0%, #bd00ff 100%);
-  border-radius: 6px;
+  border: 4px solid var(--bg);
+  border-radius: 999px;
+  background: rgba(124, 108, 245, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #bd00ff 0%, #ff006e 100%);
+  background: rgba(124, 108, 245, 0.75);
 }
 
-/* === SELECTION === */
 ::selection {
-  background: rgba(0, 245, 255, 0.3);
-  color: white;
+  background: rgba(124, 108, 245, 0.25);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid rgba(124, 108, 245, 0.7);
+  outline-offset: 3px;
+}
+
+/* === MOTION & MOBILE =============================================== */
+
+@media (max-width: 767px) {
+  .clay-card {
+    border-radius: 28px;
+    box-shadow:
+      12px 16px 30px -16px rgba(var(--accent-rgb), 0.45),
+      inset -5px -6px 12px -6px rgba(var(--accent-rgb), 0.26),
+      inset 6px 7px 14px -5px rgba(255, 255, 255, 0.95);
+  }
+
+  .clay-orb {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
 }

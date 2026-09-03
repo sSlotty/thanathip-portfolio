@@ -1,15 +1,19 @@
 import React from "react";
-import { WorkExperience } from "../types"; // Import the types
+import { WorkExperience } from "../types";
+import ClayCard from "./ui/ClayCard";
+import SectionHeading from "./ui/SectionHeading";
 
 type Props = {
   experiences: WorkExperience[];
 };
 
+type Accent = "violet" | "pink" | "sky";
+const ACCENTS: Accent[] = ["violet", "pink", "sky"];
+
 function formatDate(date: Date): string {
   const day = date.getDate();
   const month = date.toLocaleString("default", { month: "short" });
-  const year = date.getFullYear();
-  return `${day} ${month} ${year}`;
+  return `${day} ${month} ${date.getFullYear()}`;
 }
 
 const decomposeDates = (start: Date, end: Date): string => {
@@ -28,6 +32,120 @@ const decomposeDates = (start: Date, end: Date): string => {
   return parts.join(", ") || "0 days";
 };
 
+type Block =
+  | { kind: "heading"; text: string }
+  | { kind: "text"; text: string }
+  | { kind: "list"; marker: "bullet" | "check"; items: string[] }
+  | { kind: "stack"; items: string[] };
+
+/**
+ * The descriptions are authored as plain text with "•" bullets, "✓" wins and a
+ * trailing "Tech Stack:" line. Parsing them into blocks lets the panel present
+ * real lists and chips instead of one pre-wrapped paragraph.
+ */
+const parseDescription = (description: string): Block[] => {
+  const blocks: Block[] = [];
+
+  description
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      if (/^tech stack:/i.test(line)) {
+        blocks.push({
+          kind: "stack",
+          items: line
+            .replace(/^tech stack:/i, "")
+            .split("•")
+            .map((item) => item.trim())
+            .filter(Boolean),
+        });
+        return;
+      }
+
+      const marker =
+        line.startsWith("•") ? "bullet" : line.startsWith("✓") ? "check" : null;
+
+      if (marker) {
+        const item = line.slice(1).trim();
+        const last = blocks[blocks.length - 1];
+        if (last && last.kind === "list" && last.marker === marker) {
+          last.items.push(item);
+        } else {
+          blocks.push({ kind: "list", marker, items: [item] });
+        }
+        return;
+      }
+
+      if (line.endsWith(":") && line === line.toUpperCase()) {
+        blocks.push({ kind: "heading", text: line.replace(/:$/, "") });
+        return;
+      }
+
+      blocks.push({ kind: "text", text: line });
+    });
+
+  return blocks;
+};
+
+const DescriptionBlocks = ({ blocks }: { blocks: Block[] }) => (
+  <div className="space-y-4">
+    {blocks.map((block, index) => {
+      if (block.kind === "heading") {
+        return (
+          <h4
+            key={index}
+            className="chip-clay mono !text-[0.6rem] !tracking-[0.2em] uppercase mt-2"
+          >
+            {block.text}
+          </h4>
+        );
+      }
+
+      if (block.kind === "text") {
+        return (
+          <p key={index} className="text-sm md:text-base text-ink/85 leading-relaxed">
+            {block.text}
+          </p>
+        );
+      }
+
+      if (block.kind === "stack") {
+        return (
+          <div key={index} className="flex flex-wrap gap-1.5 pt-1">
+            {block.items.map((item) => (
+              <span key={item} className="chip-clay !py-1 !px-3 !text-[0.7rem]">
+                {item}
+              </span>
+            ))}
+          </div>
+        );
+      }
+
+      return (
+        <ul key={index} className="space-y-2">
+          {block.items.map((item) => (
+            <li
+              key={item}
+              className="flex gap-3 text-sm md:text-[0.95rem] text-ink-dim leading-relaxed"
+            >
+              <span
+                aria-hidden="true"
+                className={
+                  block.marker === "check"
+                    ? "mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-md bg-mint shadow-[inset_-1px_-1px_2px_rgba(0,0,0,0.2),inset_1px_1px_2px_rgba(255,255,255,0.6)]"
+                    : "mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--accent)] opacity-70"
+                }
+              />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    })}
+  </div>
+);
+
 const TimelineItem = ({
   experience,
   index,
@@ -44,116 +162,66 @@ const TimelineItem = ({
     endDate,
     description,
   } = experience;
-  const currentDate = new Date();
-  const end = endDate || currentDate;
+  const end = endDate || new Date();
   const isActive = !endDate;
-
-  const getBorderColor = (index: number) => {
-    const colors = [
-      "border-neon-cyan",
-      "border-neon-purple",
-      "border-neon-pink",
-    ];
-    return colors[index % colors.length];
-  };
+  const accent = ACCENTS[index % ACCENTS.length];
+  const blocks = parseDescription(description);
 
   return (
-    <li className="relative mb-8 md:mb-12 animate-slide-in-left">
-      {/* Desktop Layout - Logo on Left */}
-      <div className="hidden md:flex gap-6">
-        {/* Logo with Glow */}
-        <div className="flex-shrink-0 relative">
-          <div
-            className={`z-10 flex items-center justify-center w-16 h-16 bg-white rounded-2xl border-3 ${getBorderColor(index)} shadow-brutal-sm`}
-          >
+    <li className="relative mb-6 md:mb-10">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+        {/* Node on the rail */}
+        <div
+          className={`accent-${accent} relative flex-shrink-0 self-center md:self-start perspective-near`}
+        >
+          <div className="clay-well h-20 w-20 p-3">
             <img
               src={logoUrl}
               alt={altText}
-              className="h-12 w-12 object-contain"
+              className="h-full w-full object-contain rounded-xl"
+              loading="lazy"
             />
           </div>
           {isActive && (
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-neon-green rounded-full border-3 border-black animate-glow-pulse"></div>
+            <span className="absolute -top-1 -right-1">
+              <span className="pulse-dot" />
+            </span>
           )}
         </div>
 
-        {/* Content Card */}
-        <div
-          className={`flex-1 glass-card-strong p-6 brutal-border-cyan brutal-hover border-3`}
+        <ClayCard
+          accent={accent}
+          stageClassName="flex-1 min-w-0"
+          className="p-5 md:p-7"
+          tilt={4}
+          delay={index * 80}
         >
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
             <div>
-              <h3 className="text-2xl md:text-3xl font-black text-white mb-1">
+              <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight text-ink">
                 {companyName}
               </h3>
-              <p className="text-lg font-bold gradient-text-cyan">{position}</p>
+              <p className="text-[var(--accent)] font-extrabold">{position}</p>
             </div>
             {isActive && (
-              <span className="px-3 py-1 bg-neon-green text-black font-black text-xs border-3 border-black shadow-brutal-sm">
-                CURRENT
+              <span className="chip-clay chip-solid accent-mint mono !text-[0.62rem] tracking-[0.18em] uppercase">
+                Current
               </span>
             )}
           </div>
 
-          <time className="block mb-4 text-sm font-bold text-gray-300">
-            📅 {formatDate(startDate)} -{" "}
-            {endDate ? formatDate(endDate) : "Present"}
-            <span className="ml-2 px-2 py-1 bg-black text-neon-yellow text-xs border-2 border-neon-yellow">
+          <p className="mono text-[0.72rem] text-ink-faint mb-5 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>
+              {formatDate(startDate)} — {endDate ? formatDate(endDate) : "Present"}
+            </span>
+            <span className="text-ink-faint/60">/</span>
+            <span className="tint-amber">
               {decomposeDates(startDate, end)}
             </span>
-          </time>
-
-          <p className="text-base text-gray-300 leading-relaxed whitespace-pre-line">
-            {description}
           </p>
-        </div>
-      </div>
 
-      {/* Mobile Layout - Logo on Top Center */}
-      <div className="md:hidden glass-card-strong p-5 brutal-border-cyan border-3">
-        {/* Logo at Top Center */}
-        <div className="flex justify-center mb-4">
-          <div className="relative">
-            <div
-              className={`z-10 flex items-center justify-center w-16 h-16 bg-white rounded-2xl border-3 ${getBorderColor(index)} shadow-brutal-sm`}
-            >
-              <img
-                src={logoUrl}
-                alt={altText}
-                className="h-12 w-12 object-contain"
-              />
-            </div>
-            {isActive && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-neon-green rounded-full border-2 border-black animate-glow-pulse"></div>
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-black text-white mb-2">{companyName}</h3>
-          <p className="text-base font-bold gradient-text-cyan mb-2">
-            {position}
-          </p>
-          {isActive && (
-            <span className="inline-block px-3 py-1 bg-neon-green text-black font-black text-xs border-2 border-black shadow-brutal-sm mb-2">
-              CURRENT
-            </span>
-          )}
-        </div>
-
-        <time className="block mb-4 text-xs font-bold text-gray-300 text-center">
-          📅 {formatDate(startDate)} -{" "}
-          {endDate ? formatDate(endDate) : "Present"}
-          <br />
-          <span className="inline-block mt-1 px-2 py-1 bg-black text-neon-yellow text-xs border-2 border-neon-yellow">
-            {decomposeDates(startDate, end)}
-          </span>
-        </time>
-
-        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line text-left">
-          {description}
-        </p>
+          <DescriptionBlocks blocks={blocks} />
+        </ClayCard>
       </div>
     </li>
   );
@@ -161,23 +229,17 @@ const TimelineItem = ({
 
 const TimelineWorkComponent = ({ experiences }: Props) => {
   return (
-    <div className="mx-auto max-w-screen-lg px-3 py-12 lg:py-16 relative">
-      {/* Decorative Elements */}
-      <div
-        className="geometric-shape geometric-square text-neon-cyan absolute top-20 right-10 animate-tilt hidden lg:block"
-        style={{ transform: "scale(0.3) rotate(45deg)" }}
+    <div className="mx-auto max-w-screen-lg px-4 md:px-6 lg:px-3 py-14 md:py-20 relative">
+      <SectionHeading
+        index="02 / Experience"
+        lead="WORK"
+        highlight="EXPERIENCE"
+        accent="pink"
+        subtitle="Where I have shipped, and what held up in production."
       />
 
-      <div className="mb-10 relative z-10">
-        <h2 className="text-4xl md:text-5xl font-black mb-3">
-          WORK <span className="gradient-text-multi">EXPERIENCE</span>
-        </h2>
-        <p className="text-gray-300 text-lg">
-          My professional journey & achievements
-        </p>
-      </div>
-
       <ol className="relative z-10">
+        <span className="timeline-rail hidden md:block" aria-hidden="true" />
         {experiences.map((experience, index) => (
           <TimelineItem
             key={experience.companyName}

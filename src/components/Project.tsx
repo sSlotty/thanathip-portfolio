@@ -1,167 +1,143 @@
 import React from "react";
-import { ProjectCardProps } from "../types";
+import ClayCard from "./ui/ClayCard";
+import SectionHeading from "./ui/SectionHeading";
+import type { Accent } from "./ui/ClayCard";
 
 type Props = {};
 
+type Project = {
+  title: string;
+  image: string;
+  link: string;
+  description: string;
+  technologies: string[];
+};
+
+const ACCENTS: Accent[] = ["violet", "pink", "sky", "amber"];
+
+const PROJECTS: Project[] = [
+  {
+    title: "No-helmet detection using YOLOv5",
+    image: "https://cdn-icons-png.flaticon.com/512/705/705668.png",
+    link: "https://github.com/camera-detects-helmet",
+    description:
+      "ระบบตรวจจับผู้ขับขี่รถจักรยานยนต์ที่ไม่สวมหมวกนิรภัย โดยใช้ YOLOv5 ในการตรวจจับ และใช้ Go Gin ในการสร้าง API สำหรับการติดต่อกับฐานข้อมูล MongoDB",
+    technologies: ["YOLOv5", "ML", "Python", "RestAPI", "MongoDB"],
+  },
+  {
+    title: "POS MON",
+    image: "https://cdn-icons-png.freepik.com/512/4990/4990333.png",
+    link: "https://github.com/sSlotty/POS-MON",
+    description:
+      "ระบบการจัดการร้านค้าโดยใช้ PHP ในการเขียนระบบหลังบ้านสำหรับการเชื่อมต่อกับฐานข้อมูล MySQL และใช้ JavaScript, HTML, CSS ในการเขียนหน้าเว็บ",
+    technologies: ["PHP", "JavaScript", "HTML", "CSS", "MySQL"],
+  },
+  {
+    title: "Clinic Management",
+    image: "https://cdn-icons-png.freepik.com/512/4521/4521401.png",
+    link: "https://github.com/sSlotty/clinic-api",
+    description:
+      "ระบบการจัดการคลินิก โดยใช้ React JS ในการเขียนหน้าเว็บและใช้ Flask Restful API ในการเชื่อมต่อกับฐานข้อมูล MongoDB",
+    technologies: ["React JS", "Flask", "Restful API", "MongoDB"],
+  },
+  {
+    title: "Hotel Management",
+    image: "https://cdn-icons-png.flaticon.com/512/3837/3837802.png",
+    link: "https://github.com/sSlotty/ResortManagement",
+    description:
+      "ระบบการจัดโรงแรม โดยใช้ Android Studio ในการเขียนแอพพลิเคชั่นและใช้ Flask Restful API ในการเชื่อมต่อกับฐานข้อมูล MongoDB",
+    technologies: ["Android Studio", "Mobile", "Flask Restful API", "MongoDB"],
+  },
+];
+
 const ProjectCard = ({
-  title,
-  image,
-  link,
-  description,
-  technologies,
+  project,
   index,
-}: ProjectCardProps & { index: number }) => {
-  const getBorderStyle = (index: number) => {
-    const styles = [
-      "brutal-border-cyan",
-      "brutal-border-purple",
-      "brutal-border-pink",
-      "brutal-border-yellow",
-    ];
-    return styles[index % styles.length];
-  };
+}: {
+  project: Project;
+  index: number;
+}) => {
+  const accent = ACCENTS[index % ACCENTS.length];
 
   return (
-    <div
-      className={`glass-card-strong ${getBorderStyle(index)} overflow-hidden brutal-hover group animate-scale-in`}
+    <ClayCard
+      accent={accent}
+      className="p-6 md:p-7 group"
+      tilt={6}
+      delay={(index % 2) * 90}
     >
-      <div className="flex flex-col md:flex-row gap-6 p-6">
-        {/* Image Section */}
-        <div className="md:w-1/3 flex items-center justify-center bg-white rounded-xl p-6 border-3 border-black shadow-brutal-sm">
-          <img
-            className="h-32 w-32 object-contain transition-transform duration-300 group-hover:scale-110"
-            src={image}
-            alt={title}
-            loading="lazy"
-          />
+      <div className="flex flex-col sm:flex-row gap-5 md:gap-6 h-full">
+        {/* The artwork sits nearest the viewer inside the panel. */}
+        <div className="sm:w-32 md:w-36 flex-shrink-0 preserve-3d">
+          <div className="clay-well aspect-square p-6 transition-transform duration-500 group-hover:translate-z-24">
+            <img
+              className="h-full w-full object-contain"
+              src={project.image}
+              alt=""
+              loading="lazy"
+            />
+          </div>
         </div>
 
-        {/* Content Section */}
-        <div className="md:w-2/3 flex flex-col gap-4">
-          {/* Title */}
-          <a
-            className="text-2xl md:text-3xl font-black text-white hover:gradient-text-cyan transition-all duration-200"
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {title} →
-          </a>
-
-          {/* Description */}
-          <p className="text-base text-gray-300 leading-relaxed">
-            {description}
-          </p>
-
-          {/* Technologies */}
-          <div className="flex flex-wrap gap-2 mt-auto">
-            {technologies.map((tech, techIndex) => {
-              const colors = [
-                "bg-neon-cyan text-black",
-                "bg-neon-purple text-white",
-                "bg-neon-pink text-white",
-                "bg-neon-yellow text-black",
-              ];
-              return (
-                <span
-                  key={techIndex}
-                  className={`px-3 py-1 text-xs md:text-sm font-bold border-3 border-black shadow-brutal-sm ${colors[techIndex % colors.length]}`}
-                >
-                  {tech}
-                </span>
-              );
-            })}
+        <div className="flex flex-1 flex-col gap-3 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-xl md:text-2xl font-extrabold tracking-tight text-ink">
+              {project.title}
+            </h3>
+            <span className="mono text-[0.6rem] tracking-[0.28em] text-ink-faint pt-1.5">
+              {String(index + 1).padStart(2, "0")}
+            </span>
           </div>
 
-          {/* View Project Button */}
+          <p className="text-sm md:text-[0.95rem] leading-relaxed text-ink-dim">
+            {project.description}
+          </p>
+
+          <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
+            {project.technologies.map((tech) => (
+              <span key={tech} className="chip-clay !py-1 !px-3 !text-[0.7rem]">
+                {tech}
+              </span>
+            ))}
+          </div>
+
           <a
-            href={link}
+            href={project.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 self-start px-4 py-2 bg-black text-white font-bold border-3 border-neon-cyan shadow-brutal-cyan hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-brutal-lg transition-all"
+            className="btn-clay !py-2.5 !px-5 !text-sm !rounded-2xl self-start mt-3"
           >
-            <span>View Project</span>
-            <span>→</span>
+            View project
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5 fill-current transition-transform duration-300 group-hover:translate-x-1"
+              aria-hidden="true"
+            >
+              <path d="M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2L11.6 6.4 13 5Z" />
+            </svg>
           </a>
         </div>
       </div>
-    </div>
+    </ClayCard>
   );
 };
 
-const ProjectComponent = (props: Props) => {
-  const projects = [
-    {
-      title: "No-helmet detection using yolov5",
-      image: "https://cdn-icons-png.flaticon.com/512/705/705668.png",
-      link: "https://github.com/camera-detects-helmet",
-      description:
-        "ระบบตรวจจับผู้ขับขี่รถจักรยานยนต์ที่ไม่สวมหมวนริภัย โดยใช้ ​YOLOv5 ในการตรวจจับและใช้ Go gin ในการสร้าง API สำหรับการติดต่อกับฐานข้อมูล MongoDB",
-      technologies: ["YOLOv5", "ML", "Python", "RestAPI", "MongoDB"],
-    },
-    {
-      title: "POS MON",
-      image: "https://cdn-icons-png.freepik.com/512/4990/4990333.png",
-      link: "https://github.com/sSlotty/POS-MON",
-      description:
-        "ระบบการจัดการร้านค้าโดยใช้ PHP ในการเขียนระบบหลังบ้านสำหรับการเชื่อมต่อกับฐานข้อมูล MySQL และใช้ JavaScript, HTML, CSS ในการเขียนหน้าเว็บ",
-      technologies: ["PHP", "JavaScript", "HTML", "CSS", "MySQL"],
-    },
-    {
-      title: "Clinic Management",
-      image: "https://cdn-icons-png.freepik.com/512/4521/4521401.png",
-      link: "https://github.com/sSlotty/clinic-api",
-      description:
-        "ระบบการจัดการคลินิก โดยใช้ React JS ในการเขียนหน้าเว็บและใช้ Flask Restful API ในการเชื่อมต่อกับฐานข้อมูล MongoDB",
-      technologies: ["React JS", "Flask", "Restful API", "MongoDB"],
-    },
-    {
-      title: "Hotel Management",
-      image: "https://cdn-icons-png.flaticon.com/512/3837/3837802.png",
-      link: "https://github.com/sSlotty/ResortManagement",
-      description:
-        "ระบบการจัดโรงแรม โดยใช้ Android Studio ในการเขียนแอพพลิเคชั่นและใช้ Flask Restful API ในการเชื่อมต่อกับฐานข้อมูล MongoDB",
-      technologies: [
-        "Android Studio",
-        "Mobile",
-        "Flask Restful API",
-        "MongoDB",
-      ],
-    },
-  ];
+const ProjectComponent = (props: Props) => (
+  <div className="mx-auto max-w-screen-lg px-4 md:px-6 lg:px-3 py-14 md:py-20 relative">
+    <SectionHeading
+      index="04 / Work"
+      lead="RECENT"
+      highlight="PROJECTS"
+      accent="amber"
+      subtitle="Side builds and experiments, from computer vision to store management."
+    />
 
-  return (
-    <div className="mx-auto max-w-screen-lg px-3 py-12 lg:py-16 relative">
-      {/* Decorative Elements */}
-      <div
-        className="geometric-shape geometric-circle text-neon-pink absolute -top-10 -left-10 animate-float hidden lg:block"
-        style={{ transform: "scale(0.4)" }}
-      />
-
-      <div className="mb-10 relative z-10">
-        <h2 className="text-4xl md:text-5xl font-black mb-3">
-          RECENT <span className="gradient-text-multi">PROJECTS</span>
-        </h2>
-        <p className="text-gray-300 text-lg">
-          Check out my latest work & experiments
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-8 relative z-10">
-        {projects.map((project, index) => (
-          <ProjectCard
-            key={index}
-            index={index}
-            title={project.title}
-            image={project.image}
-            link={project.link}
-            description={project.description}
-            technologies={project.technologies}
-          />
-        ))}
-      </div>
+    <div className="grid lg:grid-cols-2 gap-4 md:gap-5 relative z-10">
+      {PROJECTS.map((project, index) => (
+        <ProjectCard key={project.title} project={project} index={index} />
+      ))}
     </div>
-  );
-};
+  </div>
+);
 
 export default ProjectComponent;

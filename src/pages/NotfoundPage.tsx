@@ -1,36 +1,54 @@
-/* eslint-disable jsx-a11y/alt-text */
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import ShaderBackground from "../webgl/ShaderBackground";
+import ClayCard from "../components/ui/ClayCard";
 
 type Props = {};
 
 const NotfoundPage = (props: Props) => {
   return (
-    <div className="bg-gradient-to-r from-blue-950 to-blue-900">
-      <div className="w-9/12 m-auto py-16 min-h-screen flex items-center justify-center">
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg pb-8">
-          <div className="border-t border-gray-200 text-center pt-8">
-            <h1 className="text-9xl font-bold text-blue-950">404</h1>
-            <h1 className="text-6xl font-medium py-8 text-black">
-              oops! Page not found
-            </h1>
-            <p className="text-2xl pb-8 px-12 font-medium text-black">
-              Oops! The page you are looking for does not exist. It might have
-              been moved or deleted.
-            </p>
-            <Link to="/">
-              <button className="bg-gradient-to-r from-purple-400 to-blue-500 hover:from-pink-500 hover:to-orange-500 text-white font-semibold px-6 py-3 rounded-md mr-6">
-                HOME
-              </button>
-            </Link>
-            <Link to="/contact">
-              <button className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-500 text-white font-semibold px-6 py-3 rounded-md">
-                Contact Us
-              </button>
-            </Link>
-          </div>
+    <div className="min-h-screen relative flex items-center justify-center px-4 py-16">
+      <ShaderBackground />
+
+      <ClayCard
+        accent="pink"
+        stageClassName="w-full max-w-xl"
+        className="p-8 md:p-12 text-center"
+        tilt={6}
+        reveal={false}
+      >
+        <p className="chip-clay accent-pink mono !text-[0.62rem] !tracking-[0.24em] uppercase mb-7">
+          Error · 404
+        </p>
+
+        <h1
+          className="text-7xl md:text-8xl font-extrabold tracking-tight text-pop mb-6"
+          data-text="404"
+        >
+          404
+        </h1>
+
+        <h2 className="text-xl md:text-2xl font-extrabold text-ink mb-3">
+          This page drifted out of the scene
+        </h2>
+
+        <p className="text-sm md:text-base text-ink-dim mb-8 max-w-md mx-auto leading-relaxed">
+          The page you are looking for does not exist. It may have been moved or
+          deleted.
+        </p>
+
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link to="/" className="btn-clay btn-solid accent-violet">
+            Back home
+          </Link>
+          <a
+            href="mailto:thanathipch9@gmail.com"
+            className="btn-clay accent-pink"
+          >
+            Contact
+          </a>
         </div>
-      </div>
+      </ClayCard>
     </div>
   );
 };
