@@ -38,12 +38,13 @@ uniform float u_maxSteps;  /* march budget — lowered on phones */
 const float FLOOR_Y = -1.95;
 const float FAR = 16.0;
 
-/* Blob orbits. Macros rather than an array: GLSL ES 1.0 only allows constant
-   indexing, and both the distance field and the colour lookup need them. */
-#define B0(t) vec3(sin((t) * 0.50) * 1.25, cos((t) * 0.40) * 0.60,  sin((t) * 0.30) * 0.40)
-#define B1(t) vec3(cos((t) * 0.37) * -1.35, sin((t) * 0.46) * 0.72, cos((t) * 0.28) * 0.35 - 0.30)
-#define B2(t) vec3(sin((t) * 0.31 + 2.0) * 0.85, cos((t) * 0.53 + 1.0) * -0.85, sin((t) * 0.41) * 0.30 + 0.45)
-#define B3(t) vec3(cos((t) * 0.26 + 1.5) * 1.45, sin((t) * 0.33 + 2.5) * 0.50, cos((t) * 0.36) * 0.35)
+/* Per-frame scene state. The march samples the field ~130x per pixel, so
+   every sin/cos hoisted out of the distance functions removes ~130
+   transcendentals per pixel. setupScene() fills these once per fragment. */
+vec3 gB0, gB1, gB2, gB3;
+vec3 gRobotPos;
+mat2 gBodyXZ, gBodyYZ, gHeadXZ, gHeadXY, gArmL, gArmR;
+float gAntSway, gBlink;
 
 /* Material ids */
 const float M_BLOB  = 1.0;
@@ -66,6 +67,33 @@ mat2 rot(float a) {
   float s = sin(a);
   float c = cos(a);
   return mat2(c, -s, s, c);
+}
+
+void setupScene(float t) {
+  gB0 = vec3(sin(t * 0.50) * 1.25, cos(t * 0.40) * 0.60, sin(t * 0.30) * 0.40);
+  gB1 = vec3(cos(t * 0.37) * -1.35, sin(t * 0.46) * 0.72, cos(t * 0.28) * 0.35 - 0.30);
+  gB2 = vec3(sin(t * 0.31 + 2.0) * 0.85, cos(t * 0.53 + 1.0) * -0.85, sin(t * 0.41) * 0.30 + 0.45);
+  gB3 = vec3(cos(t * 0.26 + 1.5) * 1.45, sin(t * 0.33 + 2.5) * 0.50, cos(t * 0.36) * 0.35);
+
+  /* Hover, with a slow turn that also leans toward the pointer. */
+  gRobotPos = vec3(u_robotX, -0.30 + sin(t * 1.15) * 0.13, 0.15);
+  gBodyXZ = rot(sin(t * 0.55) * 0.22 + u_pointer.x * 0.30);
+  gBodyYZ = rot(sin(t * 0.90) * 0.05 - u_pointer.y * 0.10);
+
+  /* The head gets its own tilt on top of the body's. */
+  gHeadXZ = rot(sin(t * 0.80) * 0.20);
+  gHeadXY = rot(sin(t * 0.65) * 0.07);
+
+  /* The left arm sways; the right one waves in bursts. */
+  float waveGate = smoothstep(0.05, 0.45, sin(t * 0.40) * 0.5 + 0.5);
+  gArmL = rot(0.22 + sin(t * 1.1) * 0.13);
+  gArmR = rot(-0.22 + waveGate * (-2.05 + sin(t * 5.6) * 0.42));
+
+  gAntSway = sin(t * 1.6) * 0.07;
+
+  /* Blink: a short window every ~4.5s squashes the lenses flat. */
+  float phase = fract(t * 0.22);
+  gBlink = smoothstep(0.02, 0.045, phase) * (1.0 - smoothstep(0.055, 0.08, phase));
 }
 
 /* Polynomial smooth minimum — what makes clay parts melt together. */
@@ -94,52 +122,56 @@ vec2 opU(vec2 a, vec2 b) {
   return a.x < b.x ? a : b;
 }
 
-float mapBlobs(vec3 p, float t) {
-  float d = length(p - B0(t)) - 0.88;
-  d = smin(d, length(p - B1(t)) - 0.74, 0.55);
-  d = smin(d, length(p - B2(t)) - 0.62, 0.50);
-  d = smin(d, length(p - B3(t)) - 0.52, 0.45);
+float mapBlobs(vec3 p) {
+  float d = length(p - gB0) - 0.88;
+  d = smin(d, length(p - gB1) - 0.74, 0.55);
+  d = smin(d, length(p - gB2) - 0.62, 0.50);
+  d = smin(d, length(p - gB3) - 0.52, 0.45);
   return d;
 }
 
-/* Inverse-distance blend, so blob colour bleeds where they merge. */
-vec3 blobColor(vec3 p, float t) {
-  float w0 = 1.0 / (0.02 + pow(length(p - B0(t)), 4.0));
-  float w1 = 1.0 / (0.02 + pow(length(p - B1(t)), 4.0));
-  float w2 = 1.0 / (0.02 + pow(length(p - B2(t)), 4.0));
-  float w3 = 1.0 / (0.02 + pow(length(p - B3(t)), 4.0));
+/* Inverse-distance blend, so blob colour bleeds where they merge.
+   length(v)^4 is exactly (v.v)^2 — same weights, without four sqrt and
+   four pow. */
+vec3 blobColor(vec3 p) {
+  vec3 v0 = p - gB0;
+  vec3 v1 = p - gB1;
+  vec3 v2 = p - gB2;
+  vec3 v3 = p - gB3;
+  float q0 = dot(v0, v0);
+  float q1 = dot(v1, v1);
+  float q2 = dot(v2, v2);
+  float q3 = dot(v3, v3);
+  float w0 = 1.0 / (0.02 + q0 * q0);
+  float w1 = 1.0 / (0.02 + q1 * q1);
+  float w2 = 1.0 / (0.02 + q2 * q2);
+  float w3 = 1.0 / (0.02 + q3 * q3);
   return (C0 * w0 + C1 * w1 + C2 * w2 + C3 * w3) / (w0 + w1 + w2 + w3);
 }
 
 /* ---- Robot -------------------------------------------------------------
    Built in its own local space, then placed at u_robotX. Every joint is a
    rotation applied to the sample point before the primitive is evaluated. */
-vec2 mapRobot(vec3 p, float t) {
-  /* Hover, with a slow turn that also leans toward the pointer. */
-  p -= vec3(u_robotX, -0.30 + sin(t * 1.15) * 0.13, 0.15);
-  p.xz = rot(sin(t * 0.55) * 0.22 + u_pointer.x * 0.30) * p.xz;
-  p.yz = rot(sin(t * 0.90) * 0.05 - u_pointer.y * 0.10) * p.yz;
+vec2 mapRobot(vec3 p) {
+  p -= gRobotPos;
+  p.xz = gBodyXZ * p.xz;
+  p.yz = gBodyYZ * p.yz;
 
   float body = sdRoundBox(p, vec3(0.34, 0.38, 0.26), 0.14);
   float base = sdRoundBox(p - vec3(0.0, -0.54, 0.0), vec3(0.24, 0.05, 0.18), 0.10);
 
-  /* Head gets its own tilt on top of the body's. */
   vec3 ph = p - vec3(0.0, 0.76, 0.0);
-  ph.xz = rot(sin(t * 0.8) * 0.20) * ph.xz;
-  ph.xy = rot(sin(t * 0.65) * 0.07) * ph.xy;
+  ph.xz = gHeadXZ * ph.xz;
+  ph.xy = gHeadXY * ph.xy;
   float head = sdRoundBox(ph, vec3(0.32, 0.26, 0.26), 0.12);
 
-  /* Arms: the left one sways, the right one waves in bursts. */
-  float waveGate = smoothstep(0.05, 0.45, sin(t * 0.40) * 0.5 + 0.5);
-  float waveAng = waveGate * (-2.05 + sin(t * 5.6) * 0.42);
-
   vec3 pl = p - vec3(-0.44, 0.16, 0.0);
-  pl.xy = rot(0.22 + sin(t * 1.1) * 0.13) * pl.xy;
+  pl.xy = gArmL * pl.xy;
   float armL = sdCapsule(pl, vec3(0.0), vec3(0.0, -0.40, 0.0), 0.085);
   float handL = sdSphere(pl - vec3(0.0, -0.45, 0.0), 0.105);
 
   vec3 pr = p - vec3(0.44, 0.16, 0.0);
-  pr.xy = rot(-0.22 + waveAng) * pr.xy;
+  pr.xy = gArmR * pr.xy;
   float armR = sdCapsule(pr, vec3(0.0), vec3(0.0, -0.40, 0.0), 0.085);
   float handR = sdSphere(pr - vec3(0.0, -0.45, 0.0), 0.105);
 
@@ -154,9 +186,8 @@ vec2 mapRobot(vec3 p, float t) {
 
   /* Antenna, wobbling as the head moves. */
   vec3 pa = ph - vec3(0.0, 0.30, 0.0);
-  float sway = sin(t * 1.6) * 0.07;
-  float antenna = sdCapsule(pa, vec3(0.0), vec3(sway, 0.22, 0.0), 0.022);
-  float bulb = sdSphere(pa - vec3(sway * 1.15, 0.27, 0.0), 0.062);
+  float antenna = sdCapsule(pa, vec3(0.0), vec3(gAntSway, 0.22, 0.0), 0.022);
+  float bulb = sdSphere(pa - vec3(gAntSway * 1.15, 0.27, 0.0), 0.062);
   res = opU(res, vec2(smin(antenna, bulb, 0.03), M_TRIM));
 
   /* Chest panel */
@@ -167,55 +198,62 @@ vec2 mapRobot(vec3 p, float t) {
   float visor = sdRoundBox(ph - vec3(0.0, 0.01, 0.36), vec3(0.21, 0.13, 0.02), 0.06);
   res = opU(res, vec2(visor, M_VISOR));
 
-  /* Blink: a short window every ~4.5s squashes the lenses flat. */
-  float phase = fract(t * 0.22);
-  float closed = smoothstep(0.02, 0.045, phase) * (1.0 - smoothstep(0.055, 0.08, phase));
   vec3 pe = ph - vec3(0.0, 0.03, 0.43);
   pe.x = abs(pe.x) - 0.105;
-  float lens = sdRoundBox(pe, vec3(0.030, mix(0.070, 0.008, closed), 0.010), 0.020);
+  float lens = sdRoundBox(pe, vec3(0.030, mix(0.070, 0.008, gBlink), 0.010), 0.020);
   res = opU(res, vec2(lens, M_EYE));
 
   return res;
 }
 
 /* Everything that can be hit by a ray or cast a shadow (the floor is solved
-   analytically instead, so it never enters the march). */
-vec2 mapObjects(vec3 p, float t) {
-  vec2 res = vec2(mapBlobs(p, t), M_BLOB);
-  return opU(res, mapRobot(p, t));
+   analytically instead, so it never enters the march).
+
+   Bounding spheres around the two clusters were measured and reverted: the
+   branch costs more than the skipped evaluation saves, because both sides get
+   executed whenever neighbouring pixels disagree. */
+vec2 mapObjects(vec3 p) {
+  vec2 res = vec2(mapBlobs(p), M_BLOB);
+  return opU(res, mapRobot(p));
 }
 
-vec3 normalAt(vec3 p, float t) {
-  vec2 e = vec2(0.0018, 0.0);
-  return normalize(vec3(
-    mapObjects(p + e.xyy, t).x - mapObjects(p - e.xyy, t).x,
-    mapObjects(p + e.yxy, t).x - mapObjects(p - e.yxy, t).x,
-    mapObjects(p + e.yyx, t).x - mapObjects(p - e.yyx, t).x
-  ));
+/* Tetrahedron normals: four field taps where a central difference needs six. */
+vec3 normalAt(vec3 p) {
+  vec2 k = vec2(1.0, -1.0);
+  float h = 0.0018;
+  return normalize(
+    k.xyy * mapObjects(p + k.xyy * h).x +
+    k.yyx * mapObjects(p + k.yyx * h).x +
+    k.yxy * mapObjects(p + k.yxy * h).x +
+    k.xxx * mapObjects(p + k.xxx * h).x
+  );
 }
 
-float softShadow(vec3 ro, vec3 rd, float mint, float maxt, float k, float t) {
+float softShadow(vec3 ro, vec3 rd, float mint, float maxt, float k) {
   float res = 1.0;
   float ta = mint;
-  for (int i = 0; i < 26; i++) {
+  for (int i = 0; i < 18; i++) {
     if (ta > maxt) break;
-    float h = mapObjects(ro + rd * ta, t).x;
+    float h = mapObjects(ro + rd * ta).x;
     if (h < 0.0015) return 0.0;
     res = min(res, k * h / ta);
-    ta += clamp(h, 0.05, 0.40);
+    /* Already effectively black — the remaining steps cannot change it. */
+    if (res < 0.006) break;
+    ta += clamp(h, 0.07, 0.55);
   }
   return clamp(res, 0.0, 1.0);
 }
 
-float ambientOcclusion(vec3 p, vec3 n, float t) {
+float ambientOcclusion(vec3 p, vec3 n) {
   float occ = 0.0;
   float sca = 1.0;
-  for (int i = 0; i < 5; i++) {
-    float h = 0.02 + 0.11 * float(i);
-    occ += (h - mapObjects(p + n * h, t).x) * sca;
-    sca *= 0.72;
+  /* Four taps, spaced wider to cover the same reach as the old five. */
+  for (int i = 0; i < 4; i++) {
+    float h = 0.02 + 0.14 * float(i);
+    occ += (h - mapObjects(p + n * h).x) * sca;
+    sca *= 0.68;
   }
-  return clamp(1.0 - 2.2 * occ, 0.0, 1.0);
+  return clamp(1.0 - 2.4 * occ, 0.0, 1.0);
 }
 
 vec3 background(vec2 uv) {
@@ -229,8 +267,8 @@ vec3 background(vec2 uv) {
   return col;
 }
 
-vec3 materialColor(float id, vec3 p, float t) {
-  if (id < 1.5) return blobColor(p, t);
+vec3 materialColor(float id, vec3 p) {
+  if (id < 1.5) return blobColor(p);
   if (id < 2.5) return vec3(0.965, 0.960, 1.000);
   if (id < 3.5) return vec3(0.486, 0.424, 0.941);
   if (id < 4.5) return vec3(0.145, 0.120, 0.290);
@@ -240,6 +278,7 @@ vec3 materialColor(float id, vec3 p, float t) {
 void main() {
   vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
   float t = u_time;
+  setupScene(t);
 
   vec3 col = background(uv);
 
@@ -276,7 +315,7 @@ void main() {
     for (int i = 0; i < 96; i++) {
       if (float(i) > u_maxSteps) break;
       vec3 p = ro + rd * dist;
-      vec2 h = mapObjects(p, t);
+      vec2 h = mapObjects(p);
       if (h.x < 0.0016) {
         tHit = dist;
         hitId = h.y;
@@ -289,11 +328,11 @@ void main() {
 
   if (tHit > 0.0 && tHit < tFloor) {
     vec3 p = ro + rd * tHit;
-    vec3 n = normalAt(p, t);
-    vec3 base = materialColor(hitId, p, t);
+    vec3 n = normalAt(p);
+    vec3 base = materialColor(hitId, p);
 
-    float shadow = softShadow(p + n * 0.02, key, 0.03, 6.0, 12.0, t);
-    float occ = ambientOcclusion(p, n, t);
+    float shadow = softShadow(p + n * 0.02, key, 0.03, 6.0, 12.0);
+    float occ = ambientOcclusion(p, n);
 
     /* Wrapped diffuse: light bends around the terminator, which is what makes
        a matte lump read as clay rather than plastic. */
@@ -316,7 +355,7 @@ void main() {
     col = mix(shaded, col, haze * 0.68);
   } else if (tFloor < FAR) {
     vec3 p = ro + rd * tFloor;
-    float shadow = softShadow(p + vec3(0.0, 0.02, 0.0), key, 0.08, 7.0, 9.0, t);
+    float shadow = softShadow(p + vec3(0.0, 0.02, 0.0), key, 0.08, 7.0, 9.0);
     vec3 floorCol = vec3(0.930, 0.940, 1.000) * mix(0.80, 1.0, shadow);
     /* Fade the plane out quickly so it reads as a soft studio ground rather
        than a horizon cutting across the page. */
@@ -400,43 +439,46 @@ const ShaderBackground = () => {
     const uRobotX = gl.getUniformLocation(program, "u_robotX");
     const uMaxSteps = gl.getUniformLocation(program, "u_maxSteps");
 
-    /* The march is the expensive part, so render well below native resolution
-       — the shapes are soft enough that the upscale is invisible. */
-    const renderScale = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      return window.innerWidth < 768 ? dpr * 0.32 : dpr * 0.46;
+    /* Cost is pixels x frames x per-pixel work. The march keeps the last term
+       high, so the first two are where the budget is won: render far below
+       native resolution, and cap the rate — a slowly drifting backdrop does
+       not need the display's full 60Hz, let alone 120Hz. */
+    const TARGET_FPS = 30;
+    const frameBudget = 1000 / TARGET_FPS;
+
+    /* Quality tiers, best first. The watchdog below only ever steps down. */
+    const desktopTiers = [
+      { scale: 0.46, steps: 92 },
+      { scale: 0.38, steps: 76 },
+      { scale: 0.30, steps: 60 },
+      { scale: 0.24, steps: 48 },
+    ];
+    const phoneTiers = [
+      { scale: 0.32, steps: 48 },
+      { scale: 0.26, steps: 40 },
+      { scale: 0.20, steps: 34 },
+    ];
+    let tierIndex = 0;
+    const tierList = () => (window.innerWidth < 768 ? phoneTiers : desktopTiers);
+    const tier = () => {
+      const list = tierList();
+      return list[Math.min(tierIndex, list.length - 1)];
     };
 
     let frame = 0;
     let staticFrames = 0;
     let running = true;
+    let lastDraw = 0;
+    let slowFrames = 0;
     const start = performance.now();
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
-    const render = () => {
-      frame = 0;
-      if (!running) return;
-      const elapsed = reduceMotion ? 6 : (performance.now() - start) / 1000;
-      /* Ease towards the pointer so the camera glides instead of snapping. */
-      pointer.x += (pointer.tx - pointer.x) * 0.04;
-      pointer.y += (pointer.ty - pointer.y) * 0.04;
-      gl.uniform2f(uPointer, pointer.x, pointer.y);
-      gl.uniform1f(uTime, elapsed);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      /* Only reveal the canvas once a frame has actually landed, so a failed
-         context or shader leaves the CSS gradient showing instead of black. */
-      canvas.classList.add("is-ready");
-      /* Under reduced motion the image is static, so stop once a few frames
-         have survived compositing rather than burning the GPU on a still. */
-      if (reduceMotion && ++staticFrames > 8) return;
-      frame = requestAnimationFrame(render);
-    };
-
-    const resize = () => {
-      const scale = renderScale();
-      const width = Math.max(1, Math.floor(window.innerWidth * scale));
-      const height = Math.max(1, Math.floor(window.innerHeight * scale));
-      if (canvas.width === width && canvas.height === height) return;
+    const applySize = (force: boolean) => {
+      const { scale, steps } = tier();
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const width = Math.max(1, Math.floor(window.innerWidth * dpr * scale));
+      const height = Math.max(1, Math.floor(window.innerHeight * dpr * scale));
+      if (!force && canvas.width === width && canvas.height === height) return;
       canvas.width = width;
       canvas.height = height;
       gl.viewport(0, 0, width, height);
@@ -446,7 +488,7 @@ const ShaderBackground = () => {
          in world units is aspect * 2.53 at the scene's depth. */
       const aspect = width / height;
       gl.uniform1f(uRobotX, Math.min(3.6, Math.max(1.5, aspect * 2.53 * 0.78)));
-      gl.uniform1f(uMaxSteps, window.innerWidth < 768 ? 48 : 92);
+      gl.uniform1f(uMaxSteps, steps);
 
       if (reduceMotion) {
         staticFrames = 0;
@@ -454,12 +496,74 @@ const ShaderBackground = () => {
       }
     };
 
+    const render = (now?: number) => {
+      frame = 0;
+      if (!running) return;
+
+      /* Queue the next frame before any early return, so a capped frame does
+         not stop the loop. */
+      if (!reduceMotion || staticFrames <= 8) {
+        frame = requestAnimationFrame(render);
+      }
+
+      const stamp = now === undefined ? performance.now() : now;
+
+      if (!reduceMotion) {
+        /* 2ms of slack, so a frame that comes due just after a vsync is not
+           pushed back a whole interval. */
+        const since = stamp - lastDraw;
+        if (since < frameBudget - 2) return;
+
+        /* Watchdog: consistently missing the capped rate means the GPU is the
+           bottleneck, so drop a tier. Steps down only — stepping back up would
+           oscillate around the threshold. lastDraw is 0 after a pause, which
+           is why that case is excluded rather than counted as slow. */
+        if (lastDraw > 0 && since > frameBudget * 1.8) {
+          if (++slowFrames > 20 && tierIndex < tierList().length - 1) {
+            tierIndex++;
+            slowFrames = 0;
+            applySize(true);
+          }
+        } else if (slowFrames > 0) {
+          slowFrames--;
+        }
+        lastDraw = stamp;
+      }
+
+      const elapsed = reduceMotion ? 6 : (stamp - start) / 1000;
+      /* Ease towards the pointer so the camera glides instead of snapping.
+         Tuned for the capped rate: at 30fps each frame covers twice the ground
+         it did at 60. */
+      pointer.x += (pointer.tx - pointer.x) * 0.08;
+      pointer.y += (pointer.ty - pointer.y) * 0.08;
+      gl.uniform2f(uPointer, pointer.x, pointer.y);
+      gl.uniform1f(uTime, elapsed);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      /* Only reveal the canvas once a frame has actually landed, so a failed
+         context or shader leaves the CSS gradient showing instead of black. */
+      canvas.classList.add("is-ready");
+      /* Under reduced motion the image is static, so stop once a few frames
+         have survived compositing rather than burning the GPU on a still. */
+      if (reduceMotion) staticFrames++;
+    };
+
+    /* Resizing reallocates the drawing buffer, so coalesce the burst of events
+       a drag produces into one resize per frame. */
+    let resizeFrame = 0;
+    const onResize = () => {
+      if (resizeFrame) return;
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = 0;
+        applySize(false);
+      });
+    };
+
     const onPointerMove = (event: PointerEvent) => {
       pointer.tx = (event.clientX / window.innerWidth) * 2 - 1;
       pointer.ty = 1 - (event.clientY / window.innerHeight) * 2;
     };
 
-    resize();
+    applySize(true);
     render();
 
     const onVisibility = () => {
@@ -469,6 +573,9 @@ const ShaderBackground = () => {
       } else if (!running) {
         running = true;
         staticFrames = 0;
+        /* Do not let the hidden gap count against the watchdog. */
+        lastDraw = 0;
+        slowFrames = 0;
         render();
       }
     };
@@ -480,7 +587,7 @@ const ShaderBackground = () => {
       canvas.classList.add("is-lost");
     };
 
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", onResize);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     canvas.addEventListener("webglcontextlost", onContextLost);
@@ -488,7 +595,8 @@ const ShaderBackground = () => {
     return () => {
       running = false;
       cancelAnimationFrame(frame);
-      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(resizeFrame);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onPointerMove);
       document.removeEventListener("visibilitychange", onVisibility);
       canvas.removeEventListener("webglcontextlost", onContextLost);

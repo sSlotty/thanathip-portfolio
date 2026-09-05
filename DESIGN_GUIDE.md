@@ -95,7 +95,6 @@ Set an accent by adding `accent-violet` / `accent-pink` / `accent-mint` /
 |---|---|
 | `useTilt` | writes `--rx/--ry` (rotation) and `--mx/--my` (sheen) on pointer move |
 | `useReveal` | one IntersectionObserver flies `[data-reveal]` in from depth |
-| `useScrollDepth` | publishes `--scroll-y` / `--scroll-progress` on `<html>` |
 
 `useTilt` opts out on coarse pointers and under reduced motion; `useReveal`
 reveals everything immediately under reduced motion.

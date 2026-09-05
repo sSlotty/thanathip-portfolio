@@ -5,7 +5,6 @@ import TimelineWorkComponent from "../components/TimelineWork";
 import AboutComponent from "../components/About";
 import ShaderBackground from "../webgl/ShaderBackground";
 import useReveal from "../hooks/useReveal";
-import useScrollDepth from "../hooks/useScrollDepth";
 import { WorkExperience } from "../types";
 
 type Props = {};
@@ -65,7 +64,6 @@ const NAV = [
 
 const Index = (props: Props) => {
   useReveal();
-  useScrollDepth();
 
   return (
     <div className="min-h-screen relative">
