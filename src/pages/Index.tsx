@@ -1,18 +1,23 @@
+import { lazy, Suspense } from "react";
 import ProfileComponent from "../components/Profile";
 import ProjectComponent from "../components/Project";
 import SkillComponent from "../components/Skills";
 import TimelineWorkComponent from "../components/TimelineWork";
 import AboutComponent from "../components/About";
-import ShaderBackground from "../webgl/ShaderBackground";
 import useReveal from "../hooks/useReveal";
 import { WorkExperience } from "../types";
+
+/* Split out of the main bundle: the backdrop is decorative, its setup is
+   already deferred to idle, and the CSS gradient stands in until it loads. */
+const ShaderBackground = lazy(() => import("../webgl/ShaderBackground"));
 
 type Props = {};
 
 const experiences: WorkExperience[] = [
   {
     companyName: "Siam Commercial Bank (SCB)",
-    logoUrl: "./scb-logo.jpg",
+    logoUrl: "/scb-logo.jpg",
+    logoSrcSet: "/scb-logo-64.jpg 1x, /scb-logo.jpg 3x",
     altText: "scb_logo",
     position: "Software Engineer",
     startDate: new Date("2023-08-02"),
@@ -37,8 +42,10 @@ Tech Stack: Java • Spring Boot • Spring Security • Spring Data JPA • Hib
   },
   {
     companyName: "True Corporation",
-    logoUrl:
-      "https://upload.wikimedia.org/wikipedia/commons/1/1c/True_Corporation_%28Thailand%29.svg",
+    /* Self-hosted: the Wikimedia copy was the last third-party origin on the
+       page, served with no cache lifetime, and could change or block hotlinks
+       at any time. */
+    logoUrl: "/true-logo.svg",
     altText: "true_logo",
     position: "Backend Developer (Internship)",
     startDate: new Date("2022-06-01"),
@@ -67,7 +74,9 @@ const Index = (props: Props) => {
 
   return (
     <div className="min-h-screen relative">
-      <ShaderBackground />
+      <Suspense fallback={null}>
+        <ShaderBackground />
+      </Suspense>
 
       <header className="nav-shell sticky top-0 z-50">
         <div className="mx-auto max-w-screen-lg px-4 md:px-6 py-3 md:py-4 flex items-center justify-between gap-4">

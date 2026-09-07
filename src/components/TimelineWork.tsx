@@ -156,6 +156,7 @@ const TimelineItem = ({
   const {
     companyName,
     logoUrl,
+    logoSrcSet,
     altText,
     position,
     startDate,
@@ -177,6 +178,7 @@ const TimelineItem = ({
           <div className="clay-well h-20 w-20 p-3">
             <img
               src={logoUrl}
+              srcSet={logoSrcSet}
               alt={altText}
               className="h-full w-full object-contain rounded-xl"
               loading="lazy"

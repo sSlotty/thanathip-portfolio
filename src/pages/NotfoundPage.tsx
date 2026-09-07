@@ -1,14 +1,19 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import ShaderBackground from "../webgl/ShaderBackground";
 import ClayCard from "../components/ui/ClayCard";
+
+/* Split out of the main bundle: the backdrop is decorative, its setup is
+   already deferred to idle, and the CSS gradient stands in until it loads. */
+const ShaderBackground = lazy(() => import("../webgl/ShaderBackground"));
 
 type Props = {};
 
 const NotfoundPage = (props: Props) => {
   return (
     <div className="min-h-screen relative flex items-center justify-center px-4 py-16">
-      <ShaderBackground />
+      <Suspense fallback={null}>
+        <ShaderBackground />
+      </Suspense>
 
       <ClayCard
         accent="pink"

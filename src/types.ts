@@ -1,6 +1,9 @@
 export type WorkExperience = {
     companyName: string;
     logoUrl: string;
+    /* Optional density variants, so a fixed-size logo is not shipped at 3x to
+       every display. */
+    logoSrcSet?: string;
     altText: string;
     position: string;
     startDate: Date;
