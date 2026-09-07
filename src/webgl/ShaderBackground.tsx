@@ -390,220 +390,253 @@ const ShaderBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    let disposed = false;
+    let teardown: (() => void) | void;
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const start = (): (() => void) | void => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const gl = (canvas.getContext("webgl", {
-      alpha: false,
-      antialias: false,
-      depth: false,
-      stencil: false,
-      powerPreference: "low-power",
-      /* Reduced motion draws a short burst, and WebGL discards the drawing
-         buffer after each composite — without this the canvas would go black
-         on the next repaint. Not worth the cost while animating. */
-      preserveDrawingBuffer: reduceMotion,
-    }) ||
-      canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
-    if (!gl) return;
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
 
-    const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
-    const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
-    const program = gl.createProgram();
-    if (!vertex || !fragment || !program) return;
+      const gl = (canvas.getContext("webgl", {
+        alpha: false,
+        antialias: false,
+        depth: false,
+        stencil: false,
+        powerPreference: "low-power",
+        /* Reduced motion draws a short burst, and WebGL discards the drawing
+           buffer after each composite — without this the canvas would go black
+           on the next repaint. Not worth the cost while animating. */
+        preserveDrawingBuffer: reduceMotion,
+      }) ||
+        canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+      if (!gl) return;
 
-    gl.attachShader(program, vertex);
-    gl.attachShader(program, fragment);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
-    gl.useProgram(program);
+      const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
+      const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+      const program = gl.createProgram();
+      if (!vertex || !fragment || !program) return;
 
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 3, -1, -1, 3]),
-      gl.STATIC_DRAW,
-    );
-    const position = gl.getAttribLocation(program, "a_position");
-    gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+      gl.attachShader(program, vertex);
+      gl.attachShader(program, fragment);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+      gl.useProgram(program);
 
-    const uResolution = gl.getUniformLocation(program, "u_resolution");
-    const uPointer = gl.getUniformLocation(program, "u_pointer");
-    const uTime = gl.getUniformLocation(program, "u_time");
-    const uRobotX = gl.getUniformLocation(program, "u_robotX");
-    const uMaxSteps = gl.getUniformLocation(program, "u_maxSteps");
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 3, -1, -1, 3]),
+        gl.STATIC_DRAW,
+      );
+      const position = gl.getAttribLocation(program, "a_position");
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-    /* Cost is pixels x frames x per-pixel work. The march keeps the last term
-       high, so the first two are where the budget is won: render far below
-       native resolution, and cap the rate — a slowly drifting backdrop does
-       not need the display's full 60Hz, let alone 120Hz. */
-    const TARGET_FPS = 30;
-    const frameBudget = 1000 / TARGET_FPS;
+      const uResolution = gl.getUniformLocation(program, "u_resolution");
+      const uPointer = gl.getUniformLocation(program, "u_pointer");
+      const uTime = gl.getUniformLocation(program, "u_time");
+      const uRobotX = gl.getUniformLocation(program, "u_robotX");
+      const uMaxSteps = gl.getUniformLocation(program, "u_maxSteps");
 
-    /* Quality tiers, best first. The watchdog below only ever steps down. */
-    const desktopTiers = [
-      { scale: 0.46, steps: 92 },
-      { scale: 0.38, steps: 76 },
-      { scale: 0.30, steps: 60 },
-      { scale: 0.24, steps: 48 },
-    ];
-    const phoneTiers = [
-      { scale: 0.32, steps: 48 },
-      { scale: 0.26, steps: 40 },
-      { scale: 0.20, steps: 34 },
-    ];
-    let tierIndex = 0;
-    const tierList = () => (window.innerWidth < 768 ? phoneTiers : desktopTiers);
-    const tier = () => {
-      const list = tierList();
-      return list[Math.min(tierIndex, list.length - 1)];
-    };
+      /* Cost is pixels x frames x per-pixel work. The march keeps the last term
+         high, so the first two are where the budget is won: render far below
+         native resolution, and cap the rate — a slowly drifting backdrop does
+         not need the display's full 60Hz, let alone 120Hz. */
+      const TARGET_FPS = 30;
+      const frameBudget = 1000 / TARGET_FPS;
 
-    let frame = 0;
-    let staticFrames = 0;
-    let running = true;
-    let lastDraw = 0;
-    let slowFrames = 0;
-    const start = performance.now();
-    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+      /* Quality tiers, best first. The watchdog below only ever steps down. */
+      const desktopTiers = [
+        { scale: 0.46, steps: 92 },
+        { scale: 0.38, steps: 76 },
+        { scale: 0.30, steps: 60 },
+        { scale: 0.24, steps: 48 },
+      ];
+      const phoneTiers = [
+        { scale: 0.32, steps: 48 },
+        { scale: 0.26, steps: 40 },
+        { scale: 0.20, steps: 34 },
+      ];
+      let tierIndex = 0;
+      const tierList = () => (window.innerWidth < 768 ? phoneTiers : desktopTiers);
+      const tier = () => {
+        const list = tierList();
+        return list[Math.min(tierIndex, list.length - 1)];
+      };
 
-    const applySize = (force: boolean) => {
-      const { scale, steps } = tier();
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      const width = Math.max(1, Math.floor(window.innerWidth * dpr * scale));
-      const height = Math.max(1, Math.floor(window.innerHeight * dpr * scale));
-      if (!force && canvas.width === width && canvas.height === height) return;
-      canvas.width = width;
-      canvas.height = height;
-      gl.viewport(0, 0, width, height);
-      gl.uniform2f(uResolution, width, height);
+      let frame = 0;
+      let staticFrames = 0;
+      let running = true;
+      let lastDraw = 0;
+      let slowFrames = 0;
+      const start = performance.now();
+      const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
 
-      /* Park the robot just outside the content column: the visible half-width
-         in world units is aspect * 2.53 at the scene's depth. */
-      const aspect = width / height;
-      gl.uniform1f(uRobotX, Math.min(3.6, Math.max(1.5, aspect * 2.53 * 0.78)));
-      gl.uniform1f(uMaxSteps, steps);
+      const applySize = (force: boolean) => {
+        const { scale, steps } = tier();
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        const width = Math.max(1, Math.floor(window.innerWidth * dpr * scale));
+        const height = Math.max(1, Math.floor(window.innerHeight * dpr * scale));
+        if (!force && canvas.width === width && canvas.height === height) return;
+        canvas.width = width;
+        canvas.height = height;
+        gl.viewport(0, 0, width, height);
+        gl.uniform2f(uResolution, width, height);
 
-      if (reduceMotion) {
-        staticFrames = 0;
-        if (running && !frame) frame = requestAnimationFrame(render);
-      }
-    };
+        /* Park the robot just outside the content column: the visible half-width
+           in world units is aspect * 2.53 at the scene's depth. */
+        const aspect = width / height;
+        gl.uniform1f(uRobotX, Math.min(3.6, Math.max(1.5, aspect * 2.53 * 0.78)));
+        gl.uniform1f(uMaxSteps, steps);
 
-    const render = (now?: number) => {
-      frame = 0;
-      if (!running) return;
-
-      /* Queue the next frame before any early return, so a capped frame does
-         not stop the loop. */
-      if (!reduceMotion || staticFrames <= 8) {
-        frame = requestAnimationFrame(render);
-      }
-
-      const stamp = now === undefined ? performance.now() : now;
-
-      if (!reduceMotion) {
-        /* 2ms of slack, so a frame that comes due just after a vsync is not
-           pushed back a whole interval. */
-        const since = stamp - lastDraw;
-        if (since < frameBudget - 2) return;
-
-        /* Watchdog: consistently missing the capped rate means the GPU is the
-           bottleneck, so drop a tier. Steps down only — stepping back up would
-           oscillate around the threshold. lastDraw is 0 after a pause, which
-           is why that case is excluded rather than counted as slow. */
-        if (lastDraw > 0 && since > frameBudget * 1.8) {
-          if (++slowFrames > 20 && tierIndex < tierList().length - 1) {
-            tierIndex++;
-            slowFrames = 0;
-            applySize(true);
-          }
-        } else if (slowFrames > 0) {
-          slowFrames--;
+        if (reduceMotion) {
+          staticFrames = 0;
+          if (running && !frame) frame = requestAnimationFrame(render);
         }
-        lastDraw = stamp;
-      }
+      };
 
-      const elapsed = reduceMotion ? 6 : (stamp - start) / 1000;
-      /* Ease towards the pointer so the camera glides instead of snapping.
-         Tuned for the capped rate: at 30fps each frame covers twice the ground
-         it did at 60. */
-      pointer.x += (pointer.tx - pointer.x) * 0.08;
-      pointer.y += (pointer.ty - pointer.y) * 0.08;
-      gl.uniform2f(uPointer, pointer.x, pointer.y);
-      gl.uniform1f(uTime, elapsed);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      /* Only reveal the canvas once a frame has actually landed, so a failed
-         context or shader leaves the CSS gradient showing instead of black. */
-      canvas.classList.add("is-ready");
-      /* Under reduced motion the image is static, so stop once a few frames
-         have survived compositing rather than burning the GPU on a still. */
-      if (reduceMotion) staticFrames++;
-    };
+      const render = (now?: number) => {
+        frame = 0;
+        if (!running) return;
 
-    /* Resizing reallocates the drawing buffer, so coalesce the burst of events
-       a drag produces into one resize per frame. */
-    let resizeFrame = 0;
-    const onResize = () => {
-      if (resizeFrame) return;
-      resizeFrame = requestAnimationFrame(() => {
-        resizeFrame = 0;
-        applySize(false);
-      });
-    };
+        /* Queue the next frame before any early return, so a capped frame does
+           not stop the loop. */
+        if (!reduceMotion || staticFrames <= 8) {
+          frame = requestAnimationFrame(render);
+        }
 
-    const onPointerMove = (event: PointerEvent) => {
-      pointer.tx = (event.clientX / window.innerWidth) * 2 - 1;
-      pointer.ty = 1 - (event.clientY / window.innerHeight) * 2;
-    };
+        const stamp = now === undefined ? performance.now() : now;
 
-    applySize(true);
-    render();
+        if (!reduceMotion) {
+          /* 2ms of slack, so a frame that comes due just after a vsync is not
+             pushed back a whole interval. */
+          const since = stamp - lastDraw;
+          if (since < frameBudget - 2) return;
 
-    const onVisibility = () => {
-      if (document.hidden) {
+          /* Watchdog: consistently missing the capped rate means the GPU is the
+             bottleneck, so drop a tier. Steps down only — stepping back up would
+             oscillate around the threshold. lastDraw is 0 after a pause, which
+             is why that case is excluded rather than counted as slow. */
+          if (lastDraw > 0 && since > frameBudget * 1.8) {
+            if (++slowFrames > 20 && tierIndex < tierList().length - 1) {
+              tierIndex++;
+              slowFrames = 0;
+              applySize(true);
+            }
+          } else if (slowFrames > 0) {
+            slowFrames--;
+          }
+          lastDraw = stamp;
+        }
+
+        const elapsed = reduceMotion ? 6 : (stamp - start) / 1000;
+        /* Ease towards the pointer so the camera glides instead of snapping.
+           Tuned for the capped rate: at 30fps each frame covers twice the ground
+           it did at 60. */
+        pointer.x += (pointer.tx - pointer.x) * 0.08;
+        pointer.y += (pointer.ty - pointer.y) * 0.08;
+        gl.uniform2f(uPointer, pointer.x, pointer.y);
+        gl.uniform1f(uTime, elapsed);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        /* Only reveal the canvas once a frame has actually landed, so a failed
+           context or shader leaves the CSS gradient showing instead of black. */
+        canvas.classList.add("is-ready");
+        /* Under reduced motion the image is static, so stop once a few frames
+           have survived compositing rather than burning the GPU on a still. */
+        if (reduceMotion) staticFrames++;
+      };
+
+      /* Resizing reallocates the drawing buffer, so coalesce the burst of events
+         a drag produces into one resize per frame. */
+      let resizeFrame = 0;
+      const onResize = () => {
+        if (resizeFrame) return;
+        resizeFrame = requestAnimationFrame(() => {
+          resizeFrame = 0;
+          applySize(false);
+        });
+      };
+
+      const onPointerMove = (event: PointerEvent) => {
+        pointer.tx = (event.clientX / window.innerWidth) * 2 - 1;
+        pointer.ty = 1 - (event.clientY / window.innerHeight) * 2;
+      };
+
+      applySize(true);
+      render();
+
+      const onVisibility = () => {
+        if (document.hidden) {
+          running = false;
+          cancelAnimationFrame(frame);
+        } else if (!running) {
+          running = true;
+          staticFrames = 0;
+          /* Do not let the hidden gap count against the watchdog. */
+          lastDraw = 0;
+          slowFrames = 0;
+          render();
+        }
+      };
+
+      const onContextLost = (event: Event) => {
+        event.preventDefault();
         running = false;
         cancelAnimationFrame(frame);
-      } else if (!running) {
-        running = true;
-        staticFrames = 0;
-        /* Do not let the hidden gap count against the watchdog. */
-        lastDraw = 0;
-        slowFrames = 0;
-        render();
-      }
+        canvas.classList.add("is-lost");
+      };
+
+      window.addEventListener("resize", onResize);
+      window.addEventListener("pointermove", onPointerMove, { passive: true });
+      document.addEventListener("visibilitychange", onVisibility);
+      canvas.addEventListener("webglcontextlost", onContextLost);
+
+      return () => {
+        running = false;
+        cancelAnimationFrame(frame);
+        cancelAnimationFrame(resizeFrame);
+        window.removeEventListener("resize", onResize);
+        window.removeEventListener("pointermove", onPointerMove);
+        document.removeEventListener("visibilitychange", onVisibility);
+        canvas.removeEventListener("webglcontextlost", onContextLost);
+        gl.deleteBuffer(buffer);
+        gl.deleteProgram(program);
+        gl.deleteShader(vertex);
+        gl.deleteShader(fragment);
+      };
     };
 
-    const onContextLost = (event: Event) => {
-      event.preventDefault();
-      running = false;
-      cancelAnimationFrame(frame);
-      canvas.classList.add("is-lost");
+    /* Compiling and linking this shader is a long synchronous task, and the
+       backdrop is decorative — it fades in when its first frame lands. Run the
+       setup once the browser is idle so it never sits between the visitor and
+       the content. */
+    const idleWindow = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
     };
-
-    window.addEventListener("resize", onResize);
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    document.addEventListener("visibilitychange", onVisibility);
-    canvas.addEventListener("webglcontextlost", onContextLost);
+    const boot = () => {
+      if (!disposed) teardown = start();
+    };
+    const useIdle = typeof idleWindow.requestIdleCallback === "function";
+    const handle = useIdle
+      ? (idleWindow.requestIdleCallback as NonNullable<
+          typeof idleWindow.requestIdleCallback
+        >)(boot, { timeout: 1500 })
+      : window.setTimeout(boot, 150);
 
     return () => {
-      running = false;
-      cancelAnimationFrame(frame);
-      cancelAnimationFrame(resizeFrame);
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("visibilitychange", onVisibility);
-      canvas.removeEventListener("webglcontextlost", onContextLost);
-      gl.deleteBuffer(buffer);
-      gl.deleteProgram(program);
-      gl.deleteShader(vertex);
-      gl.deleteShader(fragment);
+      disposed = true;
+      if (useIdle && typeof idleWindow.cancelIdleCallback === "function") {
+        idleWindow.cancelIdleCallback(handle);
+      } else {
+        window.clearTimeout(handle);
+      }
+      if (teardown) teardown();
     };
   }, []);
 
