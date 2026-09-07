@@ -141,7 +141,9 @@ const ProfileComponent = (props: Props) => {
               <div className="relative">
                 <img
                   className="rounded-[28px] object-cover h-40 w-40 md:h-48 md:w-48 shadow-[12px_16px_30px_-14px_rgba(255,123,156,0.7)]"
-                  src="profile.webp"
+                  src="/profile.webp"
+                  srcSet="/profile-256.webp 256w, /profile.webp 512w"
+                  sizes="(min-width: 768px) 192px, 160px"
                   alt="Thanathip Chanasri"
                   loading="lazy"
                 />
